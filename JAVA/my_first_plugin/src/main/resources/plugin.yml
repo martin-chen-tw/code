@@ -1,0 +1,10 @@
+name: demo
+main: com.example.Plugin
+version: 1.00
+author: ["martin.chen"]
+api-version: 1.15
+command:
+  TNT:
+    description: summon TNT
+    usage: /<command> 
+    aliases: [T]
