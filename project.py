@@ -19,20 +19,20 @@ class Snake:
                 case 1:
                     new_body = [last[0] + 1, last[1]]
                     if (first_create_body_after_hand):
-                        self.direction = dir.left
+                        self.direction = Dir.left
                 case 2:
                     new_body = [last[0] - 1, last[1]]
                     new_body = [last[0] + 1, last[1]]
                     if (first_create_body_after_hand):
-                        self.direction = dir.right
+                        self.direction = Dir.right
                 case 3:
                     new_body = [last[0], last[1] + 1]
                     if (first_create_body_after_hand):
-                        self.direction = dir.down
+                        self.direction = Dir.down
                 case 4:
                     new_body = [last[0], last[1] - 1]
                     if (first_create_body_after_hand):
-                        self.direction = dir.up
+                        self.direction = Dir.up
             first_create_body_after_hand = False
             
             if 1 <= new_body[0] <= gameconfig.block_number[0] and 1 <= new_body[1] <= gameconfig.block_number[1]:
@@ -47,6 +47,7 @@ class Snake:
         pass
 
 class CanvaManager:
+    global gameconfig
     def __init__(self, root):
         self.root = root
         self.canvas = None
@@ -60,25 +61,45 @@ class CanvaManager:
         root.geometry('800x600')
         self.clear_canvas()
         self.canvas = tk.Canvas(self.root, width=800, height=600)
-        self.canvas.create_text( 400, 45, text='Snake Io Game', anchor='center', fill='#000000', font=('Times New Roman', 30, 'bold'))
-        self.canvas.create_text( 400, 85, text='Created by MING-HAO CHIN', anchor='center', fill='#000000', font=('Times New Roman', 17))
-        self.canvas.create_text( 400, 110, text='All Right Reserved', anchor='center', fill='#303030', font=('Times New Roman', 10))
+        self.canvas.create_text( 400, 35, text='Snake Io Game', anchor='center', fill=f'#{0x000000:06X}', font=('Times New Roman', 40, 'bold'))
+        self.canvas.create_text( 400, 75, text='Created by MING-HAO CHIN 20250613', anchor='center', fill='black', font=('Times New Roman', 17))
+        self.canvas.create_text( 400, 100, text='DO NOT USE FOR ANY OTHER PURPOSE EXCEPT ', anchor='center', fill='#303030', font=('Times New Roman', 10, 'bold'))
+        self.canvas.create_text( 400, 115, text='NCCU_1132_207047001_Computer Programming Group1 Final Project', anchor='center', fill='#303030', font=('Times New Roman', 10))
         self.canvas.pack()
+        
     def gaming_page(self):
+        pass
+    def rank_score_page(self):
         pass
         
 
 class Gameconfig:
     def __init__(self):
         self.block_number = [10,10]
+        # 10x10 20x20 50x30
         self.screen_size = [200,230]
+        # 200x230 400x430 1000x630
         self.snake_ini_len = 3
+        self.snake_color = 0x5ff26a
+        self.discoloration = True
+        self.screen_mod = 'light'
+        # light dark
+        self.score = 0
+        self.speed = Speed.fast
         
-class dir(Enum):
+
+        
+class Dir(Enum):
     up = 1
     down = 2
     left = 3
     right = 4
+
+class Speed(Enum):
+    fast = None
+    medium = None
+    low = None
+    
 
 def menu_setting(root):
     global menu 
@@ -115,3 +136,9 @@ menu_setting(root)
 canvam = CanvaManager(root)
 go_to_main_page()
 root.mainloop()
+
+
+#note
+    # We can't just write '#f{0x000000}' as '#000000' because it turns out to be '#0', we should add ':06X' after the text to declare a fixed output format 
+    # so 'black'equals to '#000000' and f'#{0x000000:06X}'
+    # Use 'x' when lowercase English letters in hexadecimal are expected
