@@ -66,7 +66,7 @@ class CanvaManager:
         root.geometry('800x600')
         self.clear_canvas()
         self.canvas = tk.Canvas(self.root, width=800, height=600)
-        self.canvas.create_text( 400, 35, text='Snake Io Game', anchor='center', fill=f'#{0x000000:06X}', font=('Times New Roman', 40, 'bold'))
+        self.canvas.create_text( 400, 32, text='Snake', anchor='center', fill=f'#{0x000000:06X}', font=('Times New Roman', 42, 'bold'))
         self.canvas.create_text( 400, 75, text='Created by MING-HAO CHIN 20250613', anchor='center', fill='black', font=('Times New Roman', 17))
         self.canvas.create_text( 400, 100, text='DO NOT USE FOR ANY OTHER PURPOSE EXCEPT ', anchor='center', fill='#303030', font=('Times New Roman', 10, 'bold'))
         self.canvas.create_text( 400, 115, text='NCCU_1132_207047001_Computer Programming Group1 Final Project', anchor='center', fill='#303030', font=('Times New Roman', 10))
@@ -107,28 +107,17 @@ class CanvaManager:
         self.slow_speed_button.place(x=200, y=305, anchor='center')
 
         #---
-
-        self.canvas.create_text( 400, 340, text='Snake Configeration', anchor='center', fill='#202020', font=('Times New Roman', 19, 'bold'))
-        self.default_ini_body_len_button = tk.Radiobutton(self.root, text='default initial lengh (3)', anchor='center', fg='#404040', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=False) 
-        self.customized_ini_body_len_button = tk.Radiobutton(self.root, text='customized initial lengh', anchor='center', fg='#404040', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=True)
-        self.customized_ini_body_len_entry = tk.Entry(self.root, width=3, font=('Times New Roman', 12, 'bold'), fg='#404040', bg='#f0f0f0',state='normal',
-                                                      validate='focusout', validatecommand=(self.root.register(lambda :ini_len_vcmd(), '%P')))
-        self.customized_ini_body_len_entry.insert(0, '3')
-        self.customized_ini_body_len_entry.config(state='disabled')
-        self.default_ini_body_len_button.config(command=lambda: select_default_len())
-        self.customized_ini_body_len_button.config(command=lambda: select_customized_len())
         
-        def ini_len_vcmd():
-            x = self.customized_ini_body_len_entry.get()
-            if x.isdigit() and 0 < int(x) < 16:
-                return True
-            else:
-                mb.showerror("Error", "the value must be a integer between 1 and 15")
-            return False
-
+        def clear_focus(event):
+            widget = event.widget
+            if isinstance(widget, tk.Entry):
+                return
+            root.focus_set()
+            
+        root.bind_all('<Button-1>', clear_focus, add='+')
+        
         def select_default_len():
             self.customized_ini_body_len_entry.config(state='normal')
-            self.customized_ini_body_len_entry.delete(0, 'end')
             self.customized_ini_body_len_entry.insert(0, '3')
             self.customized_ini_body_len_entry.delete(1, 'end')
             self.customized_ini_body_len_entry.config(state='disabled')
@@ -136,6 +125,43 @@ class CanvaManager:
 
         def select_customized_len():
             self.customized_ini_body_len_entry.config(state='normal')
+            
+        def ini_len_vcmd(x):
+            if x.isdigit() and 3 <= int(x) <= 15:
+                return True
+            else:
+                return False
+            
+        def ini_len_ivcmd(x):
+            if not x.isdigit():
+                message = "THe lengh must be a integer"
+                self.customized_ini_body_len_entry.insert(0, '3')
+                self.customized_ini_body_len_entry.delete(1, 'end')
+            elif int(x) < 3:
+                self.customized_ini_body_len_entry.insert(0, '3')
+                self.customized_ini_body_len_entry.delete(1, 'end')
+                message = "The lengh is too small (should longer than 3)"
+            elif int(x) > 15:
+                self.customized_ini_body_len_entry.delete(0, 'end')
+                self.customized_ini_body_len_entry.insert(0, '15')
+                self.customized_ini_body_len_entry.delete(2, 'end')
+                message = "The lengh is too long (should shorter than 15)"
+            mb.showerror("Wrong lengh value configeration",message, )
+                
+        len_vcmd = (self.root.register(ini_len_vcmd), '%P')
+        len_ivcmd =(self.root.register(ini_len_ivcmd), '%P')
+        self.canvas.create_text( 400, 340, text='Snake Configeration', anchor='center', fill='#202020', 
+                                font=('Times New Roman', 19, 'bold'))
+        self.default_ini_body_len_button = tk.Radiobutton(self.root, text='default initial lengh (3)', anchor='center', 
+                                                          fg='#404040', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=False) 
+        self.customized_ini_body_len_button = tk.Radiobutton(self.root, text='customized initial lengh', anchor='center', 
+                                                             fg='#404040', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=True)
+        self.customized_ini_body_len_entry = tk.Entry(self.root, width=3, font=('Times New Roman', 12, 'bold'), fg='#404040', bg='#f0f0f0',
+                                                      state='normal',validate='focusout', validatecommand=len_vcmd,invalidcommand=len_ivcmd)
+        self.customized_ini_body_len_entry.insert(0, '3')
+        self.customized_ini_body_len_entry.config(state='disabled')
+        self.default_ini_body_len_button.config(command=lambda: select_default_len())
+        self.customized_ini_body_len_button.config(command=lambda: select_customized_len())
 
         self.default_ini_body_len_button.place(x=210, y=375, anchor='center')
         self.customized_ini_body_len_button.place(x=540, y=375, anchor='center')
@@ -152,17 +178,21 @@ class CanvaManager:
         self.discoloration_button = tk.Checkbutton(self.root, text='discoloration', anchor='center', fg='#404040', font=('Times New Roman', 15, 'bold')
                                                     ,variable=gameconfig.discoloration, onvalue=True, offvalue=False)
         
-        self.save_config_button = tk.Button(self.root, text='save config', anchor='center', fg='#404040', font=('Times New Roman', 15, 'bold')
-                                                ,command=lambda: gameconfig.snake_color.set(int(self.customized_body_color_entry.get()[1:], 16)))
-
         # self.default_body_color_button.place(x=600, y=375, anchor='center')
         # self.customized_body_color_button.place(x=600, y=405, anchor='center')
         # self.customized_body_color_entry.place(x=600, y=435, anchor='center')
         # self.discoloration_button.place(x=400, y=375, anchor='center')
         # gameconfig.snake_ini_len.set(int(self.customized_ini_body_len_entry.get()) if gameconfig.is_customized_body_len.get() else 3)
+        # create a Save button as a test way
+        self.save_config_button = tk.Button(self.root, text='save config', anchor='center', fg='#404040', font=('Times New Roman', 15, 'bold')
+                                            ,command=lambda: saving_config()).place(x=400, y=580, anchor='center')
         
         self.canvas.pack()
+        
+        def saving_config():
+            pass
 
+    
         
     def gaming_page(self):
         root.geometry() #TBD
@@ -243,12 +273,14 @@ def menu_setting(root):
     root.config(menu=menu)
 
 def window_setting():
+    global canvam
     global root
     global snake
     root = tk.Tk()
     root.title("Snake io game")
     root.geometry("800x600")
     root.resizable(False, False)
+if False: #tmp disable
     root.bind('<Up>', lambda event: snake.set_direction_U())
     root.bind('<Down>', lambda event: snake.set_direction_D())
     root.bind('<Left>', lambda event: snake.set_direction_L())
