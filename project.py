@@ -2,16 +2,18 @@ import numpy as np
 import random as rd # tmp, use numpy instead
 import tkinter as tk
 import re
+import hashlib
 from tkinter import messagebox as mb
 from enum import Enum
 TEST_MODE = True
 class Snake:
     bodies = []
     def __init__(self, gameconfig):
+        if TEST_MODE: print(f"Creating snake name {self}...")
         self._direction = tk.IntVar()
         is_first_time = True
         len = gameconfig.snake_ini_len
-        self.bodies.append([rd.randint(1+1, gameconfig.block_number[0]-1), rd.randint(1+1, gameconfig.block_number[1]-1)])
+        self.bodies.append([gameconfig.snack_rng.randint(1+1, gameconfig.block_number[0]-1), gameconfig.snack_rng.randint(1+1, gameconfig.block_number[1]-1)])
         while next in self.bodies or is_first_time:
             is_first_time = False
             first_create_body_after_hand = True
@@ -50,18 +52,53 @@ class Snake:
                 if new_body not in self.bodies:
                     self.bodies.append(new_body)
                     success_create_body_count += 1
+        if TEST_MODE: print(f"Snake {self} created successfully with bodies: {self.bodies} ")
+
     def move_ (self):
         pass
     def set_direction_U(self):
-        self.__direction.set(Dir.up.value)
+        self._direction.set(Dir.up.value) if self._direction.get() != Dir.down.value else None
     def set_direction_D(self):
-        self.__direction.set(Dir.down.value)
+        self._direction.set(Dir.down.value) if self._direction.get() != Dir.up.value else None
     def set_direction_L(self):
-        self.__direction.set(Dir.left.value)
+        self._direction.set(Dir.left.value) if self._direction.get() != Dir.right.value else None
     def set_direction_R(self):
-        self.__direction.set(Dir.right.value)
+        self._direction.set(Dir.right.value) if self._direction.get() != Dir.left.value else None
     def change_color(self):
         pass
+
+class Apple:
+    global snake, gameconfig
+    _position = []
+    def __init__(self ):
+        is_first_time = True
+        while self._position in snake.bodies and is_first_time:
+            is_first_time = False
+            self._position = [gameconfig.apple_rng.integers(low=1, high=gameconfig.block_number[0]), gameconfig.apple_rng.integers(low=1,high= gameconfig.block_number[1])]
+    def change_position(self):
+        pass
+    def draw_apple(x, y):
+        # Main apple body (red)
+        gameconfig.canvas.create_oval(x + 5, y + 10, x + 25, y + 30, fill='#d62828', outline='')
+        # White highlight
+        gameconfig.gameconfig.canvas.create_oval(x + 8, y + 14, x + 12, y + 18, fill='#ffffff', outline='')
+        # Bottom shadow (dark red)
+        gameconfig.canvas.create_oval(x + 10, y + 22, x + 20, y + 28, fill='#a4161a', outline='')
+        # Stem (brown rectangle)
+        gameconfig.canvas.create_rectangle(x + 14, y + 2, x + 16, y + 10, fill='#6c584c', outline='')
+        # Leaf (green oval)
+        gameconfig.canvas.create_oval(x + 16, y + 0, x + 26, y + 10, fill='#52b788', outline='')
+        # Top shine (brighter red)
+        gameconfig.canvas.create_oval(x + 10, y + 5, x + 20, y + 15, fill='#c1121f', outline='')
+        # Secondary highlight
+        gameconfig.canvas.create_oval(x + 6, y + 12, x + 9, y + 15, fill='#f8edeb', outline='')
+        # Leaf depth (darker green overlay)
+        gameconfig.canvas.create_oval(x + 18, y + 2, x + 24, y + 8, fill='#40916c', outline='')
+        # Stem shadow (dark line)
+        gameconfig.canvas.create_line(x + 15, y + 2, x + 15, y + 10, fill='#3d3d3d', width=1)
+        # Bottom sparkle
+        gameconfig.canvas.create_oval(x + 18, y + 26, x + 20, y + 28, fill='#ffffff', outline='')
+
 
 class CanvaManager:
     def __init__(self, root):
@@ -129,11 +166,11 @@ class CanvaManager:
         self.canvas.create_text( 400, 200, text='Map Configeration', anchor='center', fill='#202020', font=('Times New Roman', 19, 'bold'))
         
         self.large_size_button = tk.Radiobutton(self.root, text='large size', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                ,variable=gameconfig.size, value=Size.large.value, command=lambda: gameconfig.update_size(Size.large))
+                                                ,variable=gameconfig.size, value=Size.large.value)
         self.medium_size_button = tk.Radiobutton(self.root, text='medium size', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                 ,variable=gameconfig.size, value=Size.medium.value, command=lambda: gameconfig.update_size(Size.medium))
+                                                 ,variable=gameconfig.size, value=Size.medium.value)
         self.small_size_button = tk.Radiobutton(self.root, text='small size', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                ,variable=gameconfig.size, value=Size.small.value, command=lambda: gameconfig.update_size(Size.small))
+                                                ,variable=gameconfig.size, value=Size.small.value)
         self.large_size_button.place(x=600, y=235, anchor='center')
         self.medium_size_button.place(x=400, y=235, anchor='center')
         self.small_size_button.place(x=200, y=235, anchor='center')
@@ -142,8 +179,7 @@ class CanvaManager:
         self.canvas.create_text( 400, 270, text='Game Speed', anchor='center', fill='#202020', font=('Times New Roman', 19, 'bold'))
         self.fast_speed_button = tk.Radiobutton(self.root, text='fast', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
                                                 ,variable=gameconfig.speed, value=Speed.fast.value)
-        self.medium_speed_button = tk.Radiobutton(self.root, text='medium', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                 ,variable=gameconfig.speed, value=Speed.medium.value)
+        self.medium_speed_button = tk.Radiobutton(self.root, text='medium', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold') ,variable=gameconfig.speed, value=Speed.medium.value)
         self.slow_speed_button = tk.Radiobutton(self.root, text='slow', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
                                                 ,variable=gameconfig.speed, value=Speed.slow.value)
         self.fast_speed_button.place(x=600, y=305, anchor='center')
@@ -168,7 +204,7 @@ class CanvaManager:
             gameconfig.snake_ini_len.set(3)
 
         def select_customized_len():
-            self.canvas.customized_ini_body_len_entry.config(state='normal')
+            self.customized_ini_body_len_entry.config(state='normal')
             
         def ini_len_vcmd(x):
             if x.isdigit() and 3 <= int(x) <= 15:
@@ -201,8 +237,8 @@ class CanvaManager:
                                                           fg='#363636', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=False) 
         self.customized_ini_body_len_button = tk.Radiobutton(self.root, text='customized initial lengh', anchor='center', 
                                                              fg='#363636', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=True)
-        self.customized_ini_body_len_entry = tk.Entry(self.root, width=3, font=('Times New Roman', 12, 'bold'), fg='#363636', bg='#f0f0f0',
-                                                      state='normal',validate='focusout', validatecommand=len_vcmd,invalidcommand=len_ivcmd)
+        self.customized_ini_body_len_entry = tk.Entry(self.root, width=3, font=('Times New Roman', 12, 'bold'), fg='#363636', 
+                                                        bg='#f0f0f0', state='normal',validate='focusout', validatecommand=len_vcmd,invalidcommand=len_ivcmd)
         self.customized_ini_body_len_entry.insert(0, '3')
         self.customized_ini_body_len_entry.config(state='disabled')
         self.default_ini_body_len_button.config(command=lambda: select_default_len())
@@ -248,16 +284,12 @@ class CanvaManager:
         col_vcmd = (self.root.register(ini_col_vcmd), '%P')
         col_ivcmd =(self.root.register(ini_col_ivcmd), '%P')
 
-        self.default_body_color_button = tk.Radiobutton(self.root, text='default body color', anchor='center', fg='#363636', font=('Times New Roman', 
-                                                            15,'bold'),variable=gameconfig.is_customized_color,value=False,command=lambda: select_default_color())
-        self.customized_body_color_button = tk.Radiobutton(self.root, text='customized body color', anchor='center', fg='#363636', font=('Times New Roman', 
-                                                        15, 'bold'),variable=gameconfig.is_customized_color, value=True, command=lambda: select_customized_color())
-        self.customized_body_color_entry = tk.Entry(self.root, width=10, font=('Times New Roman', 12, 'bold'), fg='#363636', bg='#f0f0f0', 
-                                                    validate='focusout',validatecommand=col_vcmd, invalidcommand=col_ivcmd)
+        self.default_body_color_button = tk.Radiobutton(self.root, text='default body color', anchor='center', fg='#363636', font=('Times New Roman', 15,'bold'),variable=gameconfig.is_customized_color,value=False,command=lambda: select_default_color())
+        self.customized_body_color_button = tk.Radiobutton(self.root, text='customized body color', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_color, value=True, command=lambda: select_customized_color())
+        self.customized_body_color_entry = tk.Entry(self.root, width=10, font=('Times New Roman', 12, 'bold'), fg='#363636', bg='#f0f0f0', validate='focusout',validatecommand=col_vcmd, invalidcommand=col_ivcmd)
         self.customized_body_color_entry.insert(0, '#5FF26A')
         self.customized_body_color_entry.config(state='disabled')
-        self.discoloration_button = tk.Checkbutton(self.root, text='discoloration', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                    ,variable=gameconfig.is_discoloration, state='normal', onvalue=True, offvalue=False)
+        self.discoloration_button = tk.Checkbutton(self.root, text='discoloration', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold') ,variable=gameconfig.is_discoloration, state='normal', onvalue=True, offvalue=False)
         
         self.default_body_color_button.place(x=170, y=420, anchor='center')
         self.customized_body_color_button.place(x=500, y=420, anchor='center')
@@ -306,32 +338,73 @@ class CanvaManager:
         self.random_seed_entry.place(x=670, y=495, anchor='center')
 
         #--- Start Game Button
-
-        def ready_to_start_game():
-            #save gameconfig
-            gameconfig.update_size(gameconfig.size.get())
-
-        def start_game():
-            ready_to_start_game()
-            self.main_page()
-
-        self.start_game_button = tk.Button(self.root, text='Start Game', anchor='center', fg='#000000', font=('Times New Roman', 19, 'bold')
-                                            ,command=lambda: (start_game(),self.gaming_page()))
+        self.start_game_button = tk.Button(self.root, text='Start Game', anchor='center', fg='#000000', font=('Times New Roman', 19, 'bold'),command=lambda: (check_customized()))
         self.start_game_button.place(x=400, y=545, anchor='center')
         
         #--- 
-
+        def check_customized():
+            is_sure = mb.askyesno("Confirm Game Start", "Custom parameters may cause unexpected bugs or crashes in the game.\nDo you wish to proceed?") if gameconfig.is_customized_body_len.get() is True or gameconfig.is_customized_color.get() is True else True
+            if is_sure: gamectl.ready_to_start_game()
+        #--- 
         self.canvas.pack()
-    
-        
+
     def gaming_page(self):
-        root.geometry('800x600') #TBD
+        x,y = 0, 1
+        dp = 100 # dp = Displacement in y-axis
+        root.geometry(gameconfig.screen_size)
+        if TEST_MODE: print(f"Setting window size to {gameconfig.screen_size}") 
         self.clear_canvas_and_widget()
+        self.canvas = tk.Canvas(self.root, width=gameconfig._block_number[x]*30, height=gameconfig._block_number[y]*30 + dp, bg=gameconfig.canvas_color)
 
     def rank_score_and_info_page(self):
         root.geometry('800x600') 
         self.clear_canvas_and_widget()
+    
+    def draw_snake_d(canvas, snake_coords, snake_color, bg_color, unit_size=30):
+        def hex_to_rgb(hex_color):
+            hex_color = hex_color.lstrip('#')
+            return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+        def rgb_to_hex(rgb_color):
+            return '#{:02x}{:02x}{:02x}'.format(*rgb_color)
+
+        def gradient_color(start_color, end_color, factor):
+            return tuple(int(s + (e - s) * factor) for s, e in zip(start_color, end_color))
+
+        snake_rgb = hex_to_rgb(snake_color)
+        bg_rgb = hex_to_rgb(bg_color)
+
+        total_segments = len(snake_coords)
+
+        for i in range(total_segments):
+            factor = i / (total_segments - 1)
+            segment_color = rgb_to_hex(gradient_color(snake_rgb, bg_rgb, factor))
+
+            x, y = snake_coords[i]
+            x1, y1 = x * unit_size, y * unit_size
+            x2, y2 = x1 + unit_size, y1 + unit_size
+
+            canvas.create_rectangle(x1, y1, x2, y2, fill=segment_color, outline=segment_color)
         
+
+class GameCtl:
+
+    def ready_to_start_game(self):
+        gameconfig.update_complex_var()
+        gameconfig.activate_wasd()
+        gameconfig.copy_gameconfig(gameconfig_m)
+        self.gaming()
+        last_record = Score_Record()
+        self.speed = gameconfig.speed.get()
+    def gaming(self):
+        global snake, apple, gameconfig, gamectl
+        canvam.gaming_page()
+
+
+        root.after(gameconfig.speed, self.game_loop)
+    def game_over(self):
+        pass
+
 
 class Gameconfig:
     def __init__(self):
@@ -339,9 +412,11 @@ class Gameconfig:
         self.size = tk.StringVar(value=Size.small.value)
         self._block_number = [10, 10]
             # 10x10 20x20 50x30
-        self._screen_size = [300,400]
+        self.screen_size = '300x400'
             # 300x400 600x700 1500x1300 (x*30, y*30+100)
         self.is_dark_mod =      tk.BooleanVar(value=False)
+        self._screen_color = '#FAFAFA'
+        self._text_color = '#272727'
         # Snake len and color
         self.is_customized_body_len = tk.BooleanVar(value=False)
         self.snake_ini_len =    tk.IntVar(value=3)
@@ -349,18 +424,21 @@ class Gameconfig:
         self.snake_color =      tk.StringVar(value="#5FF26A")
         self.is_discoloration = tk.BooleanVar(value=True)
         # Game control
-        self.speed =            tk.StringVar(value=Speed.slow.value)
+        self.speed =            tk.IntVar(value=Speed.slow.value)
         self.is_random_mod =       tk.BooleanVar(value=True)
         self.random_seed =      tk.IntVar()
         #Others
         self.bind_ids = {}
+        self._is_activated_bind = False
     
-    def copy_from(myself, other):
+    def copy_gameconfig(myself, other):
         # Screen size and color
         myself.size.set(other.size.get())
         myself._block_number = other._block_number[:]
-        myself._screen_size = other._screen_size[:]
+        myself.screen_size = other.screen_size[:]
         myself.is_dark_mod.set(other.is_dark_mod.get())
+        myself._screen_color = other._screen_color
+        myself._text_color = other._text_color
         # Snake len and color
         myself.is_customized_body_len.set(other.is_customized_body_len.get())
         myself.snake_ini_len.set(other.snake_ini_len.get())
@@ -372,17 +450,44 @@ class Gameconfig:
         myself.is_random_mod.set(other.is_random_mod.get())
         myself.random_seed.set(other.random_seed.get())
 
-    def update_size(self ,new_size):
+    def update_complex_var(self):
+        def sha256_decimal(input_value):
+            input_str = str(input_value) 
+            # calculate SHA-256 hash value
+            sha256_hash = hashlib.sha256(input_str.encode()).hexdigest()
+            
+            # change the hash value in hexadecimal to decimal format
+            decimal_hash = int(sha256_hash, 16)
+            
+            return decimal_hash
+        new_size = self.size.get()
         match new_size:
             case Size.small:
                 self.block_number = [10, 10]
-                self.screen_size = [200, 250]
+                self.screen_size = '300x400'
             case Size.medium:
                 self.block_number = [20, 20]
-                self.screen_size = [400, 450]
+                self.screen_size = '600x700'
             case Size.large:
                 self.block_number = [50, 30]
-                self.screen_size = [1000, 650]
+                self.screen_size = '1500x1300'
+        if self.is_dark_mod.get():
+            self.canvas_color = '#0D1117'
+            self.text_color = '#E0E0E0'
+        else:
+            self.canvas_color = '#FAFAFA'
+            self.text_color = '#272727'
+        if self.is_customized_body_len.get() is not True:
+            self.snake_ini_len.set(3)
+        if self.is_customized_color.get() is not True:
+            self.snake_color.set("#5FF26A")
+        if self.is_random_mod.get() is not True:
+            main_rng = np.random.default_rng(rd.randint(0, 65535))
+        else:
+            main_rng = np.random.default_rng(self.random_seed.get())
+        self.snake_rng = np.random.default_rng(sha256_decimal(main_rng.integers(low=0, high=65535)))
+        self.apple_rng = np.random.default_rng(sha256_decimal(main_rng.integers(low=0, high=65535)))
+        
 
     def activate_wasd(self):
         global root, snake
@@ -394,15 +499,38 @@ class Gameconfig:
         self.bind_ids['<s>']     = root.bind('<s>',     lambda e: snake.set_direction_D(), add='+')
         self.bind_ids['<a>']     = root.bind('<a>',     lambda e: snake.set_direction_L(), add='+')
         self.bind_ids['<d>']     = root.bind('<d>',     lambda e: snake.set_direction_R(), add='+')
+        if self._is_activated_bind is False:
+            self._is_activated_bind = True
+            if TEST_MODE: print("WASD keys activated")
 
     def deactivate_wasd(self):
         if self.bind_ids is None:
             for key, bind_id in self.bind_ids.items():
                 root.unbind(key, bind_id)
+        if self._is_activated_bind is True:
+            self._is_activated_bind = False
+            if TEST_MODE: print("WASD keys deactivated")
         
-class GameData_Record:
-    # when editing the variable type, change tk value declare functon type as well
-    pass
+class Score_Record:
+    def __init__(self):
+        self._score = 0
+        self._apple_count = 0
+        self._max_len = gameconfig.snake_ini_len.get()
+        if TEST_MODE: print(f"Score_Record initialization done")
+    def add_score(self, score):
+        self._score += score
+        if TEST_MODE: print(f"Score added: {score}, Total score: {self._score}")
+    def add_apple(self):
+        self._apple_count += 1
+        if TEST_MODE: print(f"Apple count increased: {self._apple_count}")
+    def add_len(self, len):
+        self._max_len += len
+        if TEST_MODE: print(f"Snake length increased: {self._max_len}")
+    def copy_score_record(myself, other):
+        myself.add_apple(other._apple_count)
+        myself.add_score(other._score) 
+        myself.add_len(other._max_len)
+        if TEST_MODE: print(f"Score_Record copied from myself to other")
 
 
 class Size(Enum):
@@ -420,9 +548,9 @@ class Dir(Enum):
 
 class Speed(Enum):
     # when editing the variable type, change tk value declare functon type as well
-    fast = 'fast'
-    medium = 'medium'
-    slow = 'slow'
+    fast = 30
+    medium = 60
+    slow = 90
     
 
 def menu_setting(root):
@@ -460,6 +588,8 @@ def go_to_info_page():
 if __name__ == "__main__":
     window_setting()
     gameconfig = Gameconfig()
+    gameconfig_m = Gameconfig()
+    gamectl = GameCtl()
     menu_setting(root)
     canvam = CanvaManager(root)
     go_to_main_page()
