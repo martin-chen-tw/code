@@ -66,29 +66,14 @@ class Snake:
 class CanvaManager:
     def __init__(self, root):
         self.root = root
-        self.canvas = None
-        self.page_frame = None
-        self.main_page_widgets = [
-    "start_game_button",
-    "light_button",
-    "dark_button",
-    "large_size_button",
-    "medium_size_button",
-    "small_size_button",
-    "fast_speed_button",
-    "medium_speed_button",
-    "slow_speed_button",
-    "default_ini_body_len_button",
-    "customized_ini_body_len_button",
-    "default_body_color_button",
-    "customized_body_color_button",
-    "random_mod_button",
-    "fixed_mod_button",
-    "discoloration_button",
-    "customized_ini_body_len_entry",
-    "customized_body_color_entry",
-    "random_seed_entry"
-]
+        self.canvas = tk.Canvas(self.root, width=800, height=600)
+        self.main_page_widgets = ["start_game_button","light_button","dark_button","large_size_button","medium_size_button","small_size_button",
+    "fast_speed_button","medium_speed_button","slow_speed_button","default_ini_body_len_button","customized_ini_body_len_button","default_body_color_button",
+    "customized_body_color_button","random_mod_button","fixed_mod_button","discoloration_button","customized_ini_body_len_entry","customized_body_color_entry",
+    "random_seed_entry"]
+       
+        for name in self.main_page_widgets:
+            setattr(self.canvas, name, None)
 
     def clear_canvas_and_widget(self):
         if self.canvas is not None:
@@ -102,35 +87,25 @@ class CanvaManager:
             except Exception as e:
                 if TEST_MODE: print(f"Failed to clear canvas: {e}")
             finally:
+                if TEST_MODE: print("Clearing canvas done")
                 self.canvas = None
-        self.destroy_widgets_by_name_list(self.main_page_widgets)
-# here here here here here here here here here here here here here here here
-# here here here here here here here here here here here here here here here
-# here here here here here here here here here here here here here here here
-# here here here here here here here here here here here here here here here
-    def destroy_widgets_by_name_list(self, name_list):
-        for name in name_list:
+        for name in self.main_page_widgets:
+            widget = getattr(self, name, None)
             try:
-                widget = getattr(self, name, None)
-                if widget is not None:
+                if widget:
                     widget.destroy()
-                    if TEST_MODE: print(f"Destroyed widget: {name}")
+                    setattr(self, name, None)  
+                    if TEST_MODE: print(f"Destroyed canvas widget: {name}")
             except Exception as e:
-                if TEST_MODE:
-                    print(f"Failed to destroy widget '{name}': {e}")
-    
-
+                if TEST_MODE: print(f"Failed to clear canvas: {e}")
+        
     def main_page(self):
         #--- Initialization
         global root, gameconfig, snake
-        def place_widget(widget, x, y):
-            widget.place(in_=self.page_frame, x=x, y=y, anchor='center')
-            return widget
-        
         gameconfig.deactivate_wasd()
         root.geometry('800x600')
         self.clear_canvas_and_widget()
-        self.page_frame = tk.Frame(self.root)
+
         #--- Title and information
         self.canvas = tk.Canvas(self.root, width=800, height=600)
         self.canvas.create_text( 400, 32, text='Snake', anchor='center', fill=f'#{0x000000:06X}', font=('Times New Roman', 42, 'bold'))
@@ -142,32 +117,38 @@ class CanvaManager:
         #--- Screen Display
 
         self.canvas.create_text( 400, 147, text='Screen Display ', anchor='center', fill='#202020', font=('Times New Roman', 19, 'bold'))
-        self.canvas.light_button = tk.Radiobutton(self.root, text='light mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                      ,variable=gameconfig.is_dark_mod, value=False).place(x=250, y=175,anchor='center')
-        self.canvas.dark_button = tk.Radiobutton(self.root, text='dark mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                      ,variable=gameconfig.is_dark_mod, value=True).place(x=550, y=175, anchor='center')
-        
+        self.light_button = tk.Radiobutton(self.root, text='light mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+                                      ,variable=gameconfig.is_dark_mod, value=False)
+        self.dark_button = tk.Radiobutton(self.root, text='dark mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+                                      ,variable=gameconfig.is_dark_mod, value=True)
+        self.light_button.place(x=250, y=175,anchor='center')
+        self.dark_button.place(x=550, y=175, anchor='center')
 
         #--- Map Configeration
 
         self.canvas.create_text( 400, 200, text='Map Configeration', anchor='center', fill='#202020', font=('Times New Roman', 19, 'bold'))
         
         self.large_size_button = tk.Radiobutton(self.root, text='large size', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                ,variable=gameconfig.size, value=Size.large.value, command=lambda: gameconfig.update_size(Size.large)).place(x=600, y=235, anchor='center')
-        self.canvas.medium_size_button = tk.Radiobutton(self.root, text='medium size', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                 ,variable=gameconfig.size, value=Size.medium.value, command=lambda: gameconfig.update_size(Size.medium)).place(x=400, y=235, anchor='center')
-        self.canvas.small_size_button = tk.Radiobutton(self.root, text='small size', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                ,variable=gameconfig.size, value=Size.small.value, command=lambda: gameconfig.update_size(Size.small)).place(x=200, y=235, anchor='center')
-
+                                                ,variable=gameconfig.size, value=Size.large.value, command=lambda: gameconfig.update_size(Size.large))
+        self.medium_size_button = tk.Radiobutton(self.root, text='medium size', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+                                                 ,variable=gameconfig.size, value=Size.medium.value, command=lambda: gameconfig.update_size(Size.medium))
+        self.small_size_button = tk.Radiobutton(self.root, text='small size', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+                                                ,variable=gameconfig.size, value=Size.small.value, command=lambda: gameconfig.update_size(Size.small))
+        self.large_size_button.place(x=600, y=235, anchor='center')
+        self.medium_size_button.place(x=400, y=235, anchor='center')
+        self.small_size_button.place(x=200, y=235, anchor='center')
         #--- Game Speed
 
         self.canvas.create_text( 400, 270, text='Game Speed', anchor='center', fill='#202020', font=('Times New Roman', 19, 'bold'))
-        self.canvas.fast_speed_button = tk.Radiobutton(self.root, text='fast', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                ,variable=gameconfig.speed, value=Speed.fast.value).place(x=600, y=305, anchor='center')
-        self.canvas.medium_speed_button = tk.Radiobutton(self.root, text='medium', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                 ,variable=gameconfig.speed, value=Speed.medium.value).place(x=400, y=305, anchor='center')
-        self.canvas.slow_speed_button = tk.Radiobutton(self.root, text='slow', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
-                                                ,variable=gameconfig.speed, value=Speed.slow.value).place(x=200, y=305, anchor='center')
+        self.fast_speed_button = tk.Radiobutton(self.root, text='fast', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+                                                ,variable=gameconfig.speed, value=Speed.fast.value)
+        self.medium_speed_button = tk.Radiobutton(self.root, text='medium', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+                                                 ,variable=gameconfig.speed, value=Speed.medium.value)
+        self.slow_speed_button = tk.Radiobutton(self.root, text='slow', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+                                                ,variable=gameconfig.speed, value=Speed.slow.value)
+        self.fast_speed_button.place(x=600, y=305, anchor='center')
+        self.medium_speed_button.place(x=400, y=305, anchor='center')
+        self.slow_speed_button.place(x=200, y=305, anchor='center')
         
         #--- Snake Configeration (lengh)
         
@@ -216,35 +197,35 @@ class CanvaManager:
 
         self.canvas.create_text( 400, 340, text='Snake Configeration', anchor='center', fill='#202020', 
                                 font=('Times New Roman', 19, 'bold'))
-        self.canvas.default_ini_body_len_button = tk.Radiobutton(self.root, text='default initial lengh (3)', anchor='center', 
+        self.default_ini_body_len_button = tk.Radiobutton(self.root, text='default initial lengh (3)', anchor='center', 
                                                           fg='#363636', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=False) 
-        self.canvas.customized_ini_body_len_button = tk.Radiobutton(self.root, text='customized initial lengh', anchor='center', 
+        self.customized_ini_body_len_button = tk.Radiobutton(self.root, text='customized initial lengh', anchor='center', 
                                                              fg='#363636', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=True)
-        self.canvas.customized_ini_body_len_entry = tk.Entry(self.root, width=3, font=('Times New Roman', 12, 'bold'), fg='#363636', bg='#f0f0f0',
+        self.customized_ini_body_len_entry = tk.Entry(self.root, width=3, font=('Times New Roman', 12, 'bold'), fg='#363636', bg='#f0f0f0',
                                                       state='normal',validate='focusout', validatecommand=len_vcmd,invalidcommand=len_ivcmd)
-        self.canvas.customized_ini_body_len_entry.insert(0, '3')
-        self.canvas.customized_ini_body_len_entry.config(state='disabled')
-        self.canvas.default_ini_body_len_button.config(command=lambda: select_default_len())
-        self.canvas.customized_ini_body_len_button.config(command=lambda: select_customized_len())
+        self.customized_ini_body_len_entry.insert(0, '3')
+        self.customized_ini_body_len_entry.config(state='disabled')
+        self.default_ini_body_len_button.config(command=lambda: select_default_len())
+        self.customized_ini_body_len_button.config(command=lambda: select_customized_len())
 
-        self.canvas.default_ini_body_len_button.place(x=210, y=380, anchor='center')
-        self.canvas.customized_ini_body_len_button.place(x=540, y=380, anchor='center')
-        self.canvas.customized_ini_body_len_entry.place(x=680, y=380, anchor='center')
+        self.default_ini_body_len_button.place(x=210, y=380, anchor='center')
+        self.customized_ini_body_len_button.place(x=540, y=380, anchor='center')
+        self.customized_ini_body_len_entry.place(x=680, y=380, anchor='center')
 
         #--- Snake Configeration (color)
 
         def select_default_color():
-            self.canvas.customized_body_color_entry.config(state='normal')
-            self.canvas.customized_body_color_entry.insert(0, "#5FF26A")
-            self.canvas.customized_body_color_entry.delete(7, 'end')
-            self.canvas.customized_body_color_entry.config(state='disabled')
-            self.canvas.discoloration_button.config(state='normal')
+            self.customized_body_color_entry.config(state='normal')
+            self.customized_body_color_entry.insert(0, "#5FF26A")
+            self.customized_body_color_entry.delete(7, 'end')
+            self.customized_body_color_entry.config(state='disabled')
+            self.discoloration_button.config(state='normal')
             gameconfig.snake_color.set("#5FF26A")
 
         def select_customized_color():
-            self.canvas.customized_body_color_entry.config(state='normal')
+            self.customized_body_color_entry.config(state='normal')
             gameconfig.is_discoloration.set(False)
-            self.canvas.discoloration_button.config(state='disabled')
+            self.discoloration_button.config(state='disabled')
             
         # Regular expression for hex color code    
         col_pattern = r'^#(?:[0-9A-F]){6}$'  
@@ -256,52 +237,52 @@ class CanvaManager:
                 new = self.customized_body_color_entry.get()
                 new = '#' + new if (new[0] != '#') else new
                 new = new.upper()
-                self.canvas.customized_body_color_entry.insert(0, new)
-                self.canvas.customized_body_color_entry.delete(7, 'end')
+                self.customized_body_color_entry.insert(0, new)
+                self.customized_body_color_entry.delete(7, 'end')
             else:
-                self.canvas.customized_body_color_entry.insert(0, "#5FF26A")
-                self.canvas.customized_body_color_entry.delete(7, 'end')
+                self.customized_body_color_entry.insert(0, "#5FF26A")
+                self.customized_body_color_entry.delete(7, 'end')
                 message = "The color code is invalid\n Please follow HTML color code format \n Using the format '#RRGGBB' or 'RRGGBB' (case insensitive)"
                 mb.showerror("Wrong value configeration",message)
 
         col_vcmd = (self.root.register(ini_col_vcmd), '%P')
         col_ivcmd =(self.root.register(ini_col_ivcmd), '%P')
 
-        self.canvas.default_body_color_button = tk.Radiobutton(self.root, text='default body color', anchor='center', fg='#363636', font=('Times New Roman', 
+        self.default_body_color_button = tk.Radiobutton(self.root, text='default body color', anchor='center', fg='#363636', font=('Times New Roman', 
                                                             15,'bold'),variable=gameconfig.is_customized_color,value=False,command=lambda: select_default_color())
-        self.canvas.customized_body_color_button = tk.Radiobutton(self.root, text='customized body color', anchor='center', fg='#363636', font=('Times New Roman', 
+        self.customized_body_color_button = tk.Radiobutton(self.root, text='customized body color', anchor='center', fg='#363636', font=('Times New Roman', 
                                                         15, 'bold'),variable=gameconfig.is_customized_color, value=True, command=lambda: select_customized_color())
-        self.canvas.customized_body_color_entry = tk.Entry(self.root, width=10, font=('Times New Roman', 12, 'bold'), fg='#363636', bg='#f0f0f0', 
+        self.customized_body_color_entry = tk.Entry(self.root, width=10, font=('Times New Roman', 12, 'bold'), fg='#363636', bg='#f0f0f0', 
                                                     validate='focusout',validatecommand=col_vcmd, invalidcommand=col_ivcmd)
-        self.canvas.customized_body_color_entry.insert(0, '#5FF26A')
-        self.canvas.customized_body_color_entry.config(state='disabled')
-        self.canvas.discoloration_button = tk.Checkbutton(self.root, text='discoloration', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+        self.customized_body_color_entry.insert(0, '#5FF26A')
+        self.customized_body_color_entry.config(state='disabled')
+        self.discoloration_button = tk.Checkbutton(self.root, text='discoloration', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
                                                     ,variable=gameconfig.is_discoloration, state='normal', onvalue=True, offvalue=False)
         
-        self.canvas.default_body_color_button.place(x=170, y=420, anchor='center')
-        self.canvas.customized_body_color_button.place(x=500, y=420, anchor='center')
-        self.canvas.customized_body_color_entry.place(x=670, y=420, anchor='center')
-        self.canvas.discoloration_button.place(x=280, y=420, anchor='center')
+        self.default_body_color_button.place(x=170, y=420, anchor='center')
+        self.customized_body_color_button.place(x=500, y=420, anchor='center')
+        self.customized_body_color_entry.place(x=670, y=420, anchor='center')
+        self.discoloration_button.place(x=280, y=420, anchor='center')
 
         #---
 
 
         def select_default_rng():
             rn = str(rd.randint(0, 65535))
-            self.canvas.random_seed_entry.insert(0, rn)
-            self.canvas.random_seed_entry.delete(len(rn)-1, 'end')
-            self.canvas.random_seed_entry.config(state='disabled')
+            self.random_seed_entry.insert(0, rn)
+            self.random_seed_entry.delete(len(rn)-1, 'end')
+            self.random_seed_entry.config(state='disabled')
 
         def select_customized_rng():
-            self.canvas.random_seed_entry.config(state='normal')
+            self.random_seed_entry.config(state='normal')
 
         def ini_rng_vcmd(x):
             return x.isdigit() and 0 <= int(x) <= 65535
         
         def ini_rng_ivcmd(x):
             rn = str(rd.randint(0, 65535))
-            self.canvas.random_seed_entry.insert(0, rn)
-            self.canvas.random_seed_entry.delete(len(rn)-1, 'end')
+            self.random_seed_entry.insert(0, rn)
+            self.random_seed_entry.delete(len(rn)-1, 'end')
             message = "The RNG seed must be a integer"
             mb.showerror("Wrong value configeration",message)
 
@@ -311,18 +292,18 @@ class CanvaManager:
 
         self.canvas.create_text( 400, 455, text='Random Number Generator (RNG)', anchor='center', fill='#202020', 
                                 font=('Times New Roman', 19, 'bold'))
-        self.canvas.random_mod_button = tk.Radiobutton(self.root, text='random mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+        self.random_mod_button = tk.Radiobutton(self.root, text='random mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
                                                 ,variable=gameconfig.is_random_mod, state='normal',value=True, command=lambda: select_default_rng())
-        self.canvas.fixed_mod_button = tk.Radiobutton(self.root, text='fixed mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
+        self.fixed_mod_button = tk.Radiobutton(self.root, text='fixed mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
                                                 ,variable=gameconfig.is_random_mod, state='normal',value=False, command=lambda: select_customized_rng())
 
-        self.canvas.random_seed_entry = tk.Entry(self.root, width=10, font=('Times New Roman', 15, 'bold'), fg='#363636', bg='#f0f0f0',
+        self.random_seed_entry = tk.Entry(self.root, width=10, font=('Times New Roman', 15, 'bold'), fg='#363636', bg='#f0f0f0',
                                           validate='focusout', validatecommand=rng_vcmd, invalidcommand=rng_ivcmd)
-        self.canvas.random_seed_entry.config(state='disabled')
+        self.random_seed_entry.config(state='disabled')
 
-        self.canvas.random_mod_button.place(x=250, y=495, anchor='center')
-        self.canvas.fixed_mod_button.place(x=550, y=495, anchor='center')
-        self.canvas.random_seed_entry.place(x=670, y=495, anchor='center')
+        self.random_mod_button.place(x=250, y=495, anchor='center')
+        self.fixed_mod_button.place(x=550, y=495, anchor='center')
+        self.random_seed_entry.place(x=670, y=495, anchor='center')
 
         #--- Start Game Button
 
@@ -334,17 +315,17 @@ class CanvaManager:
             ready_to_start_game()
             self.main_page()
 
-        self.canvas.start_game_button = tk.Button(self.root, text='Start Game', anchor='center', fg='#000000', font=('Times New Roman', 19, 'bold')
-                                            ,command=lambda: (start_game(),self.gaming_page())).place(x=400, y=545, anchor='center')
+        self.start_game_button = tk.Button(self.root, text='Start Game', anchor='center', fg='#000000', font=('Times New Roman', 19, 'bold')
+                                            ,command=lambda: (start_game(),self.gaming_page()))
+        self.start_game_button.place(x=400, y=545, anchor='center')
         
         #--- 
 
         self.canvas.pack()
-        self.page_frame.pack(fill='both', expand=True)
     
         
     def gaming_page(self):
-        root.geometry() #TBD
+        root.geometry('800x600') #TBD
         self.clear_canvas_and_widget()
 
     def rank_score_and_info_page(self):
@@ -373,7 +354,24 @@ class Gameconfig:
         self.random_seed =      tk.IntVar()
         #Others
         self.bind_ids = {}
-        
+    
+    def copy_from(myself, other):
+        # Screen size and color
+        myself.size.set(other.size.get())
+        myself._block_number = other._block_number[:]
+        myself._screen_size = other._screen_size[:]
+        myself.is_dark_mod.set(other.is_dark_mod.get())
+        # Snake len and color
+        myself.is_customized_body_len.set(other.is_customized_body_len.get())
+        myself.snake_ini_len.set(other.snake_ini_len.get())
+        myself.is_customized_color.set(other.is_customized_color.get())
+        myself.snake_color.set(other.snake_color.get())
+        myself.is_discoloration.set(other.is_discoloration.get())
+        # Game control
+        myself.speed.set(other.speed.get())
+        myself.is_random_mod.set(other.is_random_mod.get())
+        myself.random_seed.set(other.random_seed.get())
+
     def update_size(self ,new_size):
         match new_size:
             case Size.small:
@@ -402,13 +400,10 @@ class Gameconfig:
             for key, bind_id in self.bind_ids.items():
                 root.unbind(key, bind_id)
         
-class Last_Record:
+class GameData_Record:
     # when editing the variable type, change tk value declare functon type as well
     pass
 
-class Best_Record:
-    # when editing the variable type, change tk value declare functon type as well
-    pass
 
 class Size(Enum):
     # when editing the variable type, change tk value declare functon type as well
