@@ -1,8 +1,15 @@
+# NAME: snack game
+# AUTHOR: MING-HAO CHEN
+# VERSION: 1.00
+# DATE: 20250614
+
 import numpy as np
-import random as rd # tmp, use numpy instead
+import time
+import random as rd 
 import tkinter as tk
 import re
 import hashlib
+import sys
 from tkinter import messagebox as mb
 from enum import Enum
 TEST_MODE = True
@@ -65,66 +72,128 @@ class Snake:
 
         if TEST_MODE: print(f"[INFO] Snake successfully created: {self.bodies}")
 
+    def create_new_head(self, dir, current_loc):
+        directions = {
+            Dir.left.value: (-1, 0),
+            Dir.right.value: (1, 0),
+            Dir.up.value: (0, -1),
+            Dir.down.value: (0, 1)
+        }
+
+        x, y = current_loc[0][0], current_loc[0][1]
+
+        dx, dy = directions[dir.get()]
+        new_x = x + dx
+        new_y = y + dy
+
+        return new_x, new_y
+
+
     def set_direction_U(self):
-        if self._direction.get() != Dir.down.value:
-            if TEST_MODE: print(f"[INFO] change direction from {self._direction.get()} to {Dir.up.name}")
+        if gamectl._can_change_dir == False: return
+        if self._direction.get() == Dir.up.value:
+            if TEST_MODE: print(f"[INFO] direction {Dir.up.name} doesn't change!")
+        elif self._direction.get() != Dir.down.value:
+            if TEST_MODE: print(f"[INFO] change direction from {self.change_num_to_emun(self._direction.get())} to {Dir.up.name}")
+            gamectl._can_change_dir = False
             self._direction.set(Dir.up.value)
         else:
-            if TEST_MODE: print(f"[BAD] cannot change direction from {self._direction.get()} to {Dir.up.name}")
+            if TEST_MODE: print(f"[BAD] cannot change direction from {self.change_num_to_emun(self._direction.get())} to {Dir.up.name}")
 
     def set_direction_D(self):
-        if self._direction.get() != Dir.up.value:
-            if TEST_MODE: print(f"[INFO] change direction from {self._direction.get()} to {Dir.down.name}")
+        if gamectl._can_change_dir == False: return
+        if self._direction.get() == Dir.down.value:
+            if TEST_MODE: print(f"[INFO] direction {Dir.down.name} doesn't change!")
+        elif self._direction.get() != Dir.up.value:
+            if TEST_MODE: print(f"[INFO] change direction from {self.change_num_to_emun(self._direction.get())} to {Dir.down.name}")
+            gamectl._can_change_dir = False
             self._direction.set(Dir.down.value)
         else:
-            if TEST_MODE: print(f"[BAD] cannot change direction from {self._direction.get()} to {Dir.down.name}")
+            if TEST_MODE: print(f"[BAD] cannot change direction from {self.change_num_to_emun(self._direction.get())} to {Dir.down.name}")
 
     def set_direction_L(self):
-        if self._direction.get() != Dir.right.value:
-            if TEST_MODE: print(f"[INFO] change direction from {self._direction.get()} to {Dir.left.name}")
+        if gamectl._can_change_dir == False: return
+        if self._direction.get() == Dir.left.value:
+            if TEST_MODE: print(f"[INFO] direction {Dir.left.name} doesn't change!")
+        elif self._direction.get() != Dir.right.value:
+            if TEST_MODE: print(f"[INFO] change direction from {self.change_num_to_emun(self._direction.get())} to {Dir.left.name}")
+            gamectl._can_change_dir = False
             self._direction.set(Dir.left.value)
         else:
-            if TEST_MODE: print(f"[BAD] cannot change direction from {self._direction.get()} to {Dir.left.name}")
+            if TEST_MODE: print(f"[BAD] cannot change direction from {self.change_num_to_emun(self._direction.get())} to {Dir.left.name}")
 
     def set_direction_R(self):
-        if self._direction.get() != Dir.left.value:
-            if TEST_MODE: print(f"[INFO] change direction from {self._direction.get()} to {Dir.right.name}")
+        if gamectl._can_change_dir == False: return
+        if self._direction.get() == Dir.right.value:
+            if TEST_MODE: print(f"[INFO] direction {Dir.right.name} doesn't change!")
+        elif self._direction.get() != Dir.left.value:
+            if TEST_MODE: print(f"[INFO] change direction from {self.change_num_to_emun(self._direction.get())} to {Dir.right.name}")
+            gamectl._can_change_dir = False
             self._direction.set(Dir.right.value)
         else:
-            if TEST_MODE: print(f"[BAD] cannot change direction from {self._direction.get()} to {Dir.right.name}")
+            if TEST_MODE: print(f"[BAD] cannot change direction from {self.change_num_to_emun(self._direction.get())} to {Dir.right.name}")
 
+    def change_num_to_emun (self, num):
+        match num:
+            case 1: return Dir.up.name
+            case 2: return Dir.down.name
+            case 3: return Dir.left.name
+            case 4: return Dir.right.name
     
 class Apple:
-    global snake, gameconfig
-    _position = []
-    def __init__(self ):
-        is_first_time = True
-        while self._position in snake.bodies and is_first_time:
-            is_first_time = False
-            self._position = [int(gameconfig.apple_rng.integers(low=1, high=gameconfig.block_number[0])), int(gameconfig.apple_rng.integers(low=1,high= gameconfig.block_number[1]))]
-    def change_position(self):
-        pass
-    def draw_apple(x, y):
-        # Main apple body (red)
-        gameconfig.canvas.create_oval(x + 5, y + 10, x + 25, y + 30, fill='#d62828', outline='')
-        # White highlight
-        gameconfig.gameconfig.canvas.create_oval(x + 8, y + 14, x + 12, y + 18, fill='#ffffff', outline='')
-        # Bottom shadow (dark red)
-        gameconfig.canvas.create_oval(x + 10, y + 22, x + 20, y + 28, fill='#a4161a', outline='')
-        # Stem (brown rectangle)
-        gameconfig.canvas.create_rectangle(x + 14, y + 2, x + 16, y + 10, fill='#6c584c', outline='')
-        # Leaf (green oval)
-        gameconfig.canvas.create_oval(x + 16, y + 0, x + 26, y + 10, fill='#52b788', outline='')
-        # Top shine (brighter red)
-        gameconfig.canvas.create_oval(x + 10, y + 5, x + 20, y + 15, fill='#c1121f', outline='')
-        # Secondary highlight
-        gameconfig.canvas.create_oval(x + 6, y + 12, x + 9, y + 15, fill='#f8edeb', outline='')
-        # Leaf depth (darker green overlay)
-        gameconfig.canvas.create_oval(x + 18, y + 2, x + 24, y + 8, fill='#40916c', outline='')
-        # Stem shadow (dark line)
-        gameconfig.canvas.create_line(x + 15, y + 2, x + 15, y + 10, fill='#3d3d3d', width=1)
-        # Bottom sparkle
-        gameconfig.canvas.create_oval(x + 18, y + 26, x + 20, y + 28, fill='#ffffff', outline='')
+    global gameconfig
+    def __init__(self,snake):
+        self._position = []
+        while True:
+            apple_x = int(gameconfig.apple_rng.integers(low=1, high=gameconfig._block_number[0]))
+            apple_y = int(gameconfig.apple_rng.integers(low=1, high=gameconfig._block_number[1]))
+            if [apple_x, apple_y] not in snake.bodies:
+                self._position = [apple_x, apple_y]
+                if TEST_MODE:print(f'[GOOD] apple is generated in [{self._position}]')
+                break
+    def change_position(self, snake):
+        x,y = None,None
+        while True:
+            apple_x = int(gameconfig.apple_rng.integers(low=1, high=gameconfig._block_number[0]))
+            apple_y = int(gameconfig.apple_rng.integers(low=1, high=gameconfig._block_number[1]))
+            if [apple_x, apple_y] not in snake.bodies:
+                self._position = [apple_x, apple_y]
+                if TEST_MODE:print(f'[GOOD] apple is generated in [{self._position}]')
+                break
+            
+
+    def draw_apple(self, loc):
+        x, y = loc[0]*30, loc[1]*30 + 100
+
+        # Main apple body (rounder)
+        canvam.canvas.create_oval(x + 4, y + 9, x + 26, y + 31, fill='#d62828', outline='')
+
+        # White highlight (smaller and softer)
+        canvam.canvas.create_oval(x + 8, y + 13, x + 11, y + 16, fill='#ffffff', outline='')
+
+        # Bottom shadow (less pronounced)
+        canvam.canvas.create_oval(x + 9, y + 22, x + 21, y + 29, fill='#a4161a', outline='')
+
+        # Stem (thinner)
+        canvam.canvas.create_rectangle(x + 14, y + 4, x + 16, y + 10, fill='#6c584c', outline='')
+
+        # Leaf (smaller and rounder)
+        canvam.canvas.create_oval(x + 17, y + 2, x + 25, y + 9, fill='#52b788', outline='')
+
+        # Top shine (gentler)
+        canvam.canvas.create_oval(x + 10, y + 6, x + 19, y + 14, fill='#c1121f', outline='')
+
+        # Secondary highlight (tiny)
+        canvam.canvas.create_oval(x + 6, y + 11, x + 8, y + 13, fill='#f8edeb', outline='')
+
+        # Leaf depth (smaller)
+        canvam.canvas.create_oval(x + 18, y + 3, x + 23, y + 7, fill='#40916c', outline='')
+
+        # Stem shadow
+        canvam.canvas.create_line(x + 15, y + 4, x + 15, y + 10, fill='#3d3d3d', width=1)
+
+        # Bottom sparkle (smaller)
+        canvam.canvas.create_oval(x + 17, y + 26, x + 19, y + 28, fill='#ffffff', outline='')
 
 
 class CanvaManager:
@@ -141,7 +210,7 @@ class CanvaManager:
 
     def clear_canvas_and_widget(self):
         if self.canvas is not None:
-            if TEST_MODE: print("[INFO]Clearing canvas...")
+            # if TEST_MODE: print("[INFO]Clearing canvas...")
             try:
                 self.canvas.delete("all")
                 for widget in self.canvas.winfo_children():
@@ -151,7 +220,7 @@ class CanvaManager:
             except Exception as e:
                 if TEST_MODE: print(f"[ERROR]Failed to clear canvas: {e}")
             finally:
-                if TEST_MODE: print("[INFO]Clearing canvas done")
+                # if TEST_MODE: print("[INFO]Clearing canvas done")
                 self.canvas = None
         for name in self.main_page_widgets:
             widget = getattr(self, name, None)
@@ -447,24 +516,58 @@ class GameCtl:
         gameconfig.update_complex_var()
         gameconfig.activate_wasd()
         gameconfig.copy_gameconfig(gameconfig_m)
+        #self._can_change_dir = False
         try:
             self.last_record = Score_Record()
             self.snake = Snake(gameconfig)
+            self.apple = Apple(self.snake)
         except tk.TclError as e:
             if TEST_MODE:print(f"[ERROR] unable to create calss snake or score_record: {e}")
         self.speed = gameconfig._speed
         if TEST_MODE:print ('[INFO] ready for starting game')
+        self._first = True
         self.game_loop()
         
     def game_loop(self):
-        if TEST_MODE:print ('[INFO]game loop start')
-        global snake, apple, gameconfig, gamectl
+        # if TEST_MODE:print ('[INFO]game loop start')
+        global gameconfig
         canvam.gaming_page()
         canvam.draw_snake_d(canvam.canvas, self.snake.bodies, gameconfig.snake_color, gameconfig._canvas_color, unit_size=30)
-
-
-        # root.after(self.speed, self.game_loop)
+        self.apple.draw_apple(self.apple._position)
+        #if self._first:
+        #    root.after(300, self.game_loop)
+        #    self._first = False
+        self._can_change_dir = True
+        new_x,new_y = self.snake.create_new_head(self.snake._direction, self.snake.bodies)
+        apple_loc = self.apple._position
+        if [new_x,new_y] ==  apple_loc:
+            self.last_record.add_apple()
+            self.last_record.add_len(1)
+            self.last_record.add_score(100)
+            self.snake.bodies.insert(0, [new_x, new_y])
+            self.apple.change_position(self.snake)
+            if TEST_MODE:print ('[INFO] eat apple!')
+        elif (0 <= new_x < int(gameconfig._block_number[0])) is not True:
+            if TEST_MODE:print ('[INFO] invaild x-axis value, game over!')
+            self.game_over()
+            return
+        elif (0 <= new_y < int(gameconfig._block_number[1])) is not True:
+            if TEST_MODE:print ('[INFO] invaild y-axis value, game over!')
+            self.game_over()
+            return
+        elif [new_x,new_y] in self.snake.bodies:
+            if TEST_MODE:print ('[INFO] hit body, game over!')
+            self.game_over()
+            return
+        else:
+            if TEST_MODE:print ('[INFO] normal move!')
+            self.snake.bodies.insert(0, [new_x, new_y])
+            self.snake.bodies.pop()
+             #tmp
+        root.after(self.speed, self.game_loop)
     def game_over(self):
+        # root.free()
+        # sys.exit(0)
         pass
 
 
@@ -585,15 +688,15 @@ class Gameconfig:
         
 
     def activate_wasd(self):
-        global root, snake
-        self.bind_ids['<Up>']    = root.bind('<Up>',    lambda e: snake.set_direction_U(), add='+')
-        self.bind_ids['<Down>']  = root.bind('<Down>',  lambda e: snake.set_direction_D(), add='+')
-        self.bind_ids['<Left>']  = root.bind('<Left>',  lambda e: snake.set_direction_L(), add='+')
-        self.bind_ids['<Right>'] = root.bind('<Right>', lambda e: snake.set_direction_R(), add='+')
-        self.bind_ids['<w>']     = root.bind('<w>',     lambda e: snake.set_direction_U(), add='+')
-        self.bind_ids['<s>']     = root.bind('<s>',     lambda e: snake.set_direction_D(), add='+')
-        self.bind_ids['<a>']     = root.bind('<a>',     lambda e: snake.set_direction_L(), add='+')
-        self.bind_ids['<d>']     = root.bind('<d>',     lambda e: snake.set_direction_R(), add='+')
+        global root ,gamectl
+        self.bind_ids['<Up>']    = root.bind('<Up>',    lambda e: gamectl.snake.set_direction_U(), add='+')
+        self.bind_ids['<Down>']  = root.bind('<Down>',  lambda e: gamectl.snake.set_direction_D(), add='+')
+        self.bind_ids['<Left>']  = root.bind('<Left>',  lambda e: gamectl.snake.set_direction_L(), add='+')
+        self.bind_ids['<Right>'] = root.bind('<Right>', lambda e: gamectl.snake.set_direction_R(), add='+')
+        self.bind_ids['<w>']     = root.bind('<w>',     lambda e: gamectl.snake.set_direction_U(), add='+')
+        self.bind_ids['<s>']     = root.bind('<s>',     lambda e: gamectl.snake.set_direction_D(), add='+')
+        self.bind_ids['<a>']     = root.bind('<a>',     lambda e: gamectl.snake.set_direction_L(), add='+')
+        self.bind_ids['<d>']     = root.bind('<d>',     lambda e: gamectl.snake.set_direction_R(), add='+')
         if self._is_activated_bind is False:
             self._is_activated_bind = True
             if TEST_MODE: print("[INFO]WASD keys activated")
@@ -645,9 +748,9 @@ class Dir(Enum):
 
 class Speed(Enum):
     # when editing the variable type, change tk value declare functon type as well
-    fast = 30
-    medium = 60
-    slow = 90
+    fast = 120
+    medium = 150
+    slow = 200
     
 
 def menu_setting(root):
