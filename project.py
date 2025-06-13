@@ -7,66 +7,93 @@ from tkinter import messagebox as mb
 from enum import Enum
 TEST_MODE = True
 class Snake:
-    bodies = []
     def __init__(self, gameconfig):
-        if TEST_MODE: print(f"Creating snake name {self}...")
+        if TEST_MODE: print("[INFO] Initializing snake class...")
+
+        self.bodies = []
         self._direction = tk.IntVar()
-        is_first_time = True
-        len = gameconfig.snake_ini_len
-        self.bodies.append([gameconfig.snack_rng.randint(1+1, gameconfig.block_number[0]-1), gameconfig.snack_rng.randint(1+1, gameconfig.block_number[1]-1)])
-        while next in self.bodies or is_first_time:
-            is_first_time = False
-            first_create_body_after_hand = True
-            success_create_body_count = 1
-            while success_create_body_count < gameconfig.snake_ini_len:
-                judge_number = rd.randint(1, 4)
-                last = self.bodies[success_create_body_count - 1]
-                match judge_number:
-                    case 1:
-                        new_body = [last[0] + 1, last[1]]
-                        if (first_create_body_after_hand):
-                            self.direction.set(Dir.left.value)
-                        next = [last[0] - 1, last[1]]
-                    case 2:
-                        new_body = [last[0] - 1, last[1]]
-                        new_body = [last[0] + 1, last[1]]
-                        if (first_create_body_after_hand):
-                            self.direction.set(Dir.right.value)
-                        next = [last[0] + 1, last[1]]
-                    case 3:
-                        new_body = [last[0], last[1] + 1]
-                        if (first_create_body_after_hand):
-                            self.direction.set(Dir.down.value)
-                        next = [last[0], last[1] - 1]
-                    case 4:
-                        new_body = [last[0], last[1] - 1]
-                        if (first_create_body_after_hand):
-                            self.direction.set(Dir.up.value)
-                        next = [last[0] + 1, last[1] ]
-                first_create_body_after_hand = False
-            if success_create_body_count >= gameconfig.snake_ini_len:
-                first_create_body_after_hand = True
-                success_create_body_count = 1
-            
-            if 1 <= new_body[0] <= gameconfig.block_number[0] and 1 <= new_body[1] <= gameconfig.block_number[1]:
-                if new_body not in self.bodies:
-                    self.bodies.append(new_body)
-                    success_create_body_count += 1
-        if TEST_MODE: print(f"Snake {self} created successfully with bodies: {self.bodies} ")
 
-    def move_ (self):
-        pass
+        directions = [
+            (1, 0, Dir.left), 
+            (-1, 0, Dir.right), 
+            (0, 1, Dir.up), 
+            (0, -1, Dir.down)
+        ]
+
+        max_attempts = 100
+        attempts = 0
+
+        while attempts < max_attempts:
+            attempts += 1
+            if TEST_MODE: print(f"[INFO] Attmpt{attempts:03X}")
+            # randomly place the snake's head
+            head_x = int(gameconfig.snake_rng.integers(2, gameconfig._block_number[0] - 1))
+            head_y = int(gameconfig.snake_rng.integers(2, gameconfig._block_number[1] - 1))
+            self.bodies = [[head_x, head_y]]
+
+            success = True
+            while len(self.bodies) < gameconfig._snake_ini_len:
+                last_body = self.bodies[-1]
+                rd.shuffle(directions)
+                
+                #if the direction is placed
+                is_placed = False
+
+                for dx, dy, direction in directions:
+                    new_x = last_body[0] + dx
+                    new_y = last_body[1] + dy
+
+                    if (1 <= new_x <= gameconfig._block_number[0] and
+                        1 <= new_y <= gameconfig._block_number[1] and
+                        [new_x, new_y] not in self.bodies):
+                        
+                        self.bodies.append([new_x, new_y])
+                        if len(self.bodies) == 2:
+                            self._direction.set(direction.value)
+                        is_placed = True
+                        break  # successful placement, break out of direction loop
+
+                if not is_placed:
+                    success = False
+                    break  # couldn't find a spot, break to retry head placement
+
+            if success:
+                break  # successfully initialized snake
+        
+        if attempts >= max_attempts:
+            if TEST_MODE: print("[ERROR] Failed to initialize snake within maximum attempts.")
+
+        if TEST_MODE: print(f"[INFO] Snake successfully created: {self.bodies}")
+
     def set_direction_U(self):
-        self._direction.set(Dir.up.value) if self._direction.get() != Dir.down.value else None
-    def set_direction_D(self):
-        self._direction.set(Dir.down.value) if self._direction.get() != Dir.up.value else None
-    def set_direction_L(self):
-        self._direction.set(Dir.left.value) if self._direction.get() != Dir.right.value else None
-    def set_direction_R(self):
-        self._direction.set(Dir.right.value) if self._direction.get() != Dir.left.value else None
-    def change_color(self):
-        pass
+        if self._direction.get() != Dir.down.value:
+            if TEST_MODE: print(f"[INFO] change direction from {self._direction.get()} to {Dir.up.name}")
+            self._direction.set(Dir.up.value)
+        else:
+            if TEST_MODE: print(f"[BAD] cannot change direction from {self._direction.get()} to {Dir.up.name}")
 
+    def set_direction_D(self):
+        if self._direction.get() != Dir.up.value:
+            if TEST_MODE: print(f"[INFO] change direction from {self._direction.get()} to {Dir.down.name}")
+            self._direction.set(Dir.down.value)
+        else:
+            if TEST_MODE: print(f"[BAD] cannot change direction from {self._direction.get()} to {Dir.down.name}")
+
+    def set_direction_L(self):
+        if self._direction.get() != Dir.right.value:
+            if TEST_MODE: print(f"[INFO] change direction from {self._direction.get()} to {Dir.left.name}")
+            self._direction.set(Dir.left.value)
+        else:
+            if TEST_MODE: print(f"[BAD] cannot change direction from {self._direction.get()} to {Dir.left.name}")
+
+    def set_direction_R(self):
+        if self._direction.get() != Dir.left.value:
+            if TEST_MODE: print(f"[INFO] change direction from {self._direction.get()} to {Dir.right.name}")
+            self._direction.set(Dir.right.value)
+        else:
+            if TEST_MODE: print(f"[BAD] cannot change direction from {self._direction.get()} to {Dir.right.name}")
+
+    
 class Apple:
     global snake, gameconfig
     _position = []
@@ -74,7 +101,7 @@ class Apple:
         is_first_time = True
         while self._position in snake.bodies and is_first_time:
             is_first_time = False
-            self._position = [gameconfig.apple_rng.integers(low=1, high=gameconfig.block_number[0]), gameconfig.apple_rng.integers(low=1,high= gameconfig.block_number[1])]
+            self._position = [int(gameconfig.apple_rng.integers(low=1, high=gameconfig.block_number[0])), int(gameconfig.apple_rng.integers(low=1,high= gameconfig.block_number[1]))]
     def change_position(self):
         pass
     def draw_apple(x, y):
@@ -110,11 +137,11 @@ class CanvaManager:
     "random_seed_entry"]
        
         for name in self.main_page_widgets:
-            setattr(self.canvas, name, None)
+            setattr(self, name, None)
 
     def clear_canvas_and_widget(self):
         if self.canvas is not None:
-            if TEST_MODE: print("Clearing canvas...")
+            if TEST_MODE: print("[INFO]Clearing canvas...")
             try:
                 self.canvas.delete("all")
                 for widget in self.canvas.winfo_children():
@@ -122,9 +149,9 @@ class CanvaManager:
                 self.canvas.pack_forget()
                 self.canvas.destroy()
             except Exception as e:
-                if TEST_MODE: print(f"Failed to clear canvas: {e}")
+                if TEST_MODE: print(f"[ERROR]Failed to clear canvas: {e}")
             finally:
-                if TEST_MODE: print("Clearing canvas done")
+                if TEST_MODE: print("[INFO]Clearing canvas done")
                 self.canvas = None
         for name in self.main_page_widgets:
             widget = getattr(self, name, None)
@@ -132,17 +159,18 @@ class CanvaManager:
                 if widget:
                     widget.destroy()
                     setattr(self, name, None)  
-                    if TEST_MODE: print(f"Destroyed canvas widget: {name}")
+                    if TEST_MODE: print(f"[INFO]Destroyed canvas widget: {name}")
             except Exception as e:
-                if TEST_MODE: print(f"Failed to clear canvas: {e}")
+                if TEST_MODE: print(f"[ERROR]Failed to clear canvas: {e}")
         
     def main_page(self):
         #--- Initialization
+        if TEST_MODE: print(f"[INFO]Initializing main page...")
         global root, gameconfig, snake
         gameconfig.deactivate_wasd()
         root.geometry('800x600')
         self.clear_canvas_and_widget()
-
+        if TEST_MODE: print(f"[INFO]Creating main page...")
         #--- Title and information
         self.canvas = tk.Canvas(self.root, width=800, height=600)
         self.canvas.create_text( 400, 32, text='Snake', anchor='center', fill=f'#{0x000000:06X}', font=('Times New Roman', 42, 'bold'))
@@ -197,10 +225,10 @@ class CanvaManager:
         root.bind_all('<Button-1>', clear_focus, add='+')
         
         def select_default_len():
-            self.canvas.customized_ini_body_len_entry.config(state='normal')
-            self.canvas.customized_ini_body_len_entry.insert(0, '3')
-            self.canvas.customized_ini_body_len_entry.delete(1, 'end')
-            self.canvas.customized_ini_body_len_entry.config(state='disabled')
+            self.customized_ini_body_len_entry.config(state='normal')
+            self.customized_ini_body_len_entry.insert(0, '3')
+            self.customized_ini_body_len_entry.delete(1, 'end')
+            self.customized_ini_body_len_entry.config(state='disabled')
             gameconfig.snake_ini_len.set(3)
 
         def select_customized_len():
@@ -215,16 +243,16 @@ class CanvaManager:
         def ini_len_ivcmd(x):
             if not x.isdigit():
                 message = "THe lengh must be a integer"
-                self.canvas.customized_ini_body_len_entry.insert(0, '3')
-                self.canvas.customized_ini_body_len_entry.delete(1, 'end')
+                self.customized_ini_body_len_entry.insert(0, '3')
+                self.customized_ini_body_len_entry.delete(1, 'end')
             elif int(x) < 3:
-                self.canvas.customized_ini_body_len_entry.insert(0, '3')
-                self.canvas.customized_ini_body_len_entry.delete(1, 'end')
+                self.customized_ini_body_len_entry.insert(0, '3')
+                self.customized_ini_body_len_entry.delete(1, 'end')
                 message = "The lengh is too small (should longer than 3)"
             elif int(x) > 15:
-                self.canvas.customized_ini_body_len_entry.delete(0, 'end')
-                self.canvas.customized_ini_body_len_entry.insert(0, '15')
-                self.canvas.customized_ini_body_len_entry.delete(2, 'end')
+                self.customized_ini_body_len_entry.delete(0, 'end')
+                self.customized_ini_body_len_entry.insert(0, '15')
+                self.customized_ini_body_len_entry.delete(2, 'end')
                 message = "The lengh is too long (should shorter than 15)"
             mb.showerror("Wrong lengh value configeration",message)
                 
@@ -300,10 +328,11 @@ class CanvaManager:
 
 
         def select_default_rng():
-            rn = str(rd.randint(0, 65535))
+            rn = int(rd.randint(0, 65535))
             self.random_seed_entry.insert(0, rn)
             self.random_seed_entry.delete(len(rn)-1, 'end')
             self.random_seed_entry.config(state='disabled')
+            self.random_seed_entry.set(rn)
 
         def select_customized_rng():
             self.random_seed_entry.config(state='normal')
@@ -328,9 +357,9 @@ class CanvaManager:
                                                 ,variable=gameconfig.is_random_mod, state='normal',value=True, command=lambda: select_default_rng())
         self.fixed_mod_button = tk.Radiobutton(self.root, text='fixed mode', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold')
                                                 ,variable=gameconfig.is_random_mod, state='normal',value=False, command=lambda: select_customized_rng())
-
         self.random_seed_entry = tk.Entry(self.root, width=10, font=('Times New Roman', 15, 'bold'), fg='#363636', bg='#f0f0f0',
                                           validate='focusout', validatecommand=rng_vcmd, invalidcommand=rng_ivcmd)
+        self.random_seed_entry.insert(0,'0')
         self.random_seed_entry.config(state='disabled')
 
         self.random_mod_button.place(x=250, y=495, anchor='center')
@@ -347,41 +376,63 @@ class CanvaManager:
             if is_sure: gamectl.ready_to_start_game()
         #--- 
         self.canvas.pack()
+        if TEST_MODE: print(f"[INFO]Creating main page done")
 
     def gaming_page(self):
+        match gameconfig._screen_size: # 300x400 600x700 1500x1300
+            case '300x400':
+                title_size = 25
+                text_size = 16
+                dx = 10
+            case '600x700':
+                title_size = 32
+                text_size = 23
+                dx = 30
+            case '1200x1000':
+                title_size = 35
+                text_size = 26
+                dx = 45   
         x,y = 0, 1
-        dp = 100 # dp = Displacement in y-axis
-        root.geometry(gameconfig.screen_size)
-        if TEST_MODE: print(f"Setting window size to {gameconfig.screen_size}") 
+        fx,fy =gameconfig._block_number[x]*30,gameconfig._block_number[y]*30+100
+        dy = 100 # dp = Displacement in y-axis
+        root.geometry(gameconfig._screen_size)
+        if TEST_MODE: print(f"[INFO]Setting window size to {gameconfig._screen_size}") 
         self.clear_canvas_and_widget()
-        self.canvas = tk.Canvas(self.root, width=gameconfig._block_number[x]*30, height=gameconfig._block_number[y]*30 + dp, bg=gameconfig.canvas_color)
+        self.canvas = tk.Canvas(self.root, width=fx, height=fy, bg=f'{str(gameconfig._canvas_color)}')
+        self.canvas.create_text( fx/2, 23,text='Snake', anchor='center', fill=gameconfig._text_color, font=('Times New Roman', title_size, 'bold'))
+        self.canvas.create_text( fx-dx, 83,text=f'Apple: {gamectl.last_record._apple_count}', anchor='e', fill=gameconfig._text_color, font=('Times New Roman', text_size, 'bold'))
+        self.canvas.create_text( fx/2, 83,text=f'Score: {gamectl.last_record._score}', anchor='center', fill=gameconfig._text_color, font=('Times New Roman', text_size, 'bold'))
+        self.canvas.create_text( dx, 83,text=f'Lengh: {gamectl.last_record._max_len}', anchor='w', fill=gameconfig._text_color, font=('Times New Roman', text_size, 'bold'))
+        self.canvas.create_line( 0,100,fx,100, fill=gameconfig._text_color, width=2)
+        self.canvas.pack()
 
     def rank_score_and_info_page(self):
         root.geometry('800x600') 
         self.clear_canvas_and_widget()
     
-    def draw_snake_d(canvas, snake_coords, snake_color, bg_color, unit_size=30):
-        def hex_to_rgb(hex_color):
-            hex_color = hex_color.lstrip('#')
-            return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    def hex_to_rgb(self, hex_color):
+        hex_color = hex_color.lstrip('#')
+        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
-        def rgb_to_hex(rgb_color):
-            return '#{:02x}{:02x}{:02x}'.format(*rgb_color)
+    def rgb_to_hex(self, rgb_color):
+        return '#{:02X}{:02X}{:02X}'.format(*rgb_color)
 
-        def gradient_color(start_color, end_color, factor):
-            return tuple(int(s + (e - s) * factor) for s, e in zip(start_color, end_color))
+    def gradient_color(self, start_color, end_color, factor):
+        return tuple(int(s + (e - s) * factor) for s, e in zip(start_color, end_color))
+    
+    def draw_snake_d(self,canvas, snake_coords, snake_color, bg_color, unit_size=30):
 
-        snake_rgb = hex_to_rgb(snake_color)
-        bg_rgb = hex_to_rgb(bg_color)
+        snake_rgb = self.hex_to_rgb(snake_color.get())
+        bg_rgb = self.hex_to_rgb(bg_color)
 
         total_segments = len(snake_coords)
 
         for i in range(total_segments):
-            factor = i / (total_segments - 1)
-            segment_color = rgb_to_hex(gradient_color(snake_rgb, bg_rgb, factor))
+            factor = i / (total_segments )
+            segment_color = self.rgb_to_hex(self.gradient_color(snake_rgb, bg_rgb, factor))
 
             x, y = snake_coords[i]
-            x1, y1 = x * unit_size, y * unit_size
+            x1, y1 = x * unit_size, y * unit_size +100
             x2, y2 = x1 + unit_size, y1 + unit_size
 
             canvas.create_rectangle(x1, y1, x2, y2, fill=segment_color, outline=segment_color)
@@ -390,18 +441,29 @@ class CanvaManager:
 class GameCtl:
 
     def ready_to_start_game(self):
+        if TEST_MODE:print ('[INFO] prepare for starting game...')
+        
+        gameconfig.update_tkinput_var()
         gameconfig.update_complex_var()
         gameconfig.activate_wasd()
         gameconfig.copy_gameconfig(gameconfig_m)
-        self.gaming()
-        last_record = Score_Record()
-        self.speed = gameconfig.speed.get()
-    def gaming(self):
+        try:
+            self.last_record = Score_Record()
+            self.snake = Snake(gameconfig)
+        except tk.TclError as e:
+            if TEST_MODE:print(f"[ERROR] unable to create calss snake or score_record: {e}")
+        self.speed = gameconfig._speed
+        if TEST_MODE:print ('[INFO] ready for starting game')
+        self.game_loop()
+        
+    def game_loop(self):
+        if TEST_MODE:print ('[INFO]game loop start')
         global snake, apple, gameconfig, gamectl
         canvam.gaming_page()
+        canvam.draw_snake_d(canvam.canvas, self.snake.bodies, gameconfig.snake_color, gameconfig._canvas_color, unit_size=30)
 
 
-        root.after(gameconfig.speed, self.game_loop)
+        # root.after(self.speed, self.game_loop)
     def game_over(self):
         pass
 
@@ -410,47 +472,69 @@ class Gameconfig:
     def __init__(self):
         # Screen size and color
         self.size = tk.StringVar(value=Size.small.value)
+        self._size = Size.small.value
         self._block_number = [10, 10]
             # 10x10 20x20 50x30
-        self.screen_size = '300x400'
+        self._screen_size = '300x400'
             # 300x400 600x700 1500x1300 (x*30, y*30+100)
         self.is_dark_mod =      tk.BooleanVar(value=False)
+        self._is_dark_mod = False
         self._screen_color = '#FAFAFA'
         self._text_color = '#272727'
         # Snake len and color
         self.is_customized_body_len = tk.BooleanVar(value=False)
+        self._is_customized_body_len = False
         self.snake_ini_len =    tk.IntVar(value=3)
+        self._snake_ini_len = 3
         self.is_customized_color = tk.BooleanVar(value=False)
+        self._is_customized_color = False
         self.snake_color =      tk.StringVar(value="#5FF26A")
+        self._snake_color = "#5FF26A"
         self.is_discoloration = tk.BooleanVar(value=True)
+        self._is_discoloration = True
         # Game control
         self.speed =            tk.IntVar(value=Speed.slow.value)
+        self._speed = Speed.slow.value
         self.is_random_mod =       tk.BooleanVar(value=True)
-        self.random_seed =      tk.IntVar()
+        self._is_random_mod = True
+        self.random_seed =      tk.IntVar(value=0)
+        self._random_seed = 0
         #Others
         self.bind_ids = {}
         self._is_activated_bind = False
+
     
     def copy_gameconfig(myself, other):
         # Screen size and color
-        myself.size.set(other.size.get())
-        myself._block_number = other._block_number[:]
-        myself.screen_size = other.screen_size[:]
-        myself.is_dark_mod.set(other.is_dark_mod.get())
-        myself._screen_color = other._screen_color
-        myself._text_color = other._text_color
-        # Snake len and color
-        myself.is_customized_body_len.set(other.is_customized_body_len.get())
-        myself.snake_ini_len.set(other.snake_ini_len.get())
-        myself.is_customized_color.set(other.is_customized_color.get())
-        myself.snake_color.set(other.snake_color.get())
-        myself.is_discoloration.set(other.is_discoloration.get())
-        # Game control
-        myself.speed.set(other.speed.get())
-        myself.is_random_mod.set(other.is_random_mod.get())
-        myself.random_seed.set(other.random_seed.get())
+        other._size = myself._size
+        other._block_number = myself._block_number 
+
+    def update_tkinput_var (self):
+        attrs = [
+        ('_size', self.size),
+        ('_is_dark_mod', self.is_dark_mod),
+        ('_is_customized_body_len', self.is_customized_body_len),
+        ('_snake_ini_len', self.snake_ini_len),
+        ('_is_customized_color', self.is_customized_color),
+        ('_snake_color', self.snake_color),
+        ('_is_discoloration', self.is_discoloration),
+        ('_speed', self.speed),
+        ('_is_random_mod', self.is_random_mod),
+        ('_random_seed', self.random_seed),
+    ]
+        if TEST_MODE:print(f'[INFO]Update tkinter input var to static var...')
+        for attr_name, attr_var in attrs:
+            
+            try:
+                setattr(self, attr_name, attr_var.get())
+                if TEST_MODE:print(f'[INFO]update gameconfig.{attr_name} = [{attr_var.get()}]')
+            except tk.TclError as e:
+                print(f"[ERROR]error occurs when try to get var of {attr_name} :{e}")
+        if TEST_MODE:print(f'[INFO]Update tkinter input var done')
 
     def update_complex_var(self):
+        if TEST_MODE:print(f'[INFO]Update complex type of vars...')
+
         def sha256_decimal(input_value):
             input_str = str(input_value) 
             # calculate SHA-256 hash value
@@ -460,33 +544,44 @@ class Gameconfig:
             decimal_hash = int(sha256_hash, 16)
             
             return decimal_hash
-        new_size = self.size.get()
-        match new_size:
-            case Size.small:
-                self.block_number = [10, 10]
-                self.screen_size = '300x400'
-            case Size.medium:
-                self.block_number = [20, 20]
-                self.screen_size = '600x700'
-            case Size.large:
-                self.block_number = [50, 30]
-                self.screen_size = '1500x1300'
-        if self.is_dark_mod.get():
-            self.canvas_color = '#0D1117'
-            self.text_color = '#E0E0E0'
+        
+        match self._size:
+            case Size.small.value:
+                self._block_number = [10, 10]
+                self._screen_size = '300x400'
+            case Size.medium.value:
+                self._block_number = [20, 20]
+                self._screen_size = '600x700'
+            case Size.large.value:
+                self._block_number = [40, 30]
+                self._screen_size = '1200x1000'
+        if TEST_MODE:print(f'[INFO]update _block_number = {self._block_number}')
+        if TEST_MODE:print(f'[INFO]update _screen_size = [{self._screen_size}]')
+
+        if self._is_dark_mod:
+            self._canvas_color = '#0D1117'
+            self._text_color = '#E0E0E0'
         else:
-            self.canvas_color = '#FAFAFA'
-            self.text_color = '#272727'
-        if self.is_customized_body_len.get() is not True:
-            self.snake_ini_len.set(3)
-        if self.is_customized_color.get() is not True:
-            self.snake_color.set("#5FF26A")
-        if self.is_random_mod.get() is not True:
-            main_rng = np.random.default_rng(rd.randint(0, 65535))
+            self._canvas_color = '#FAFAFA'
+            self._text_color = '#272727'
+        if TEST_MODE:print(f'[INFO]update _canvas_color = [{self._canvas_color}]')
+        if TEST_MODE:print(f'[INFO]update _text_color = [{self._text_color}]')
+        if self._is_customized_body_len is not True:
+            self._snake_ini_len = 3
+        if TEST_MODE:print(f'[INFO]update _snake_ini_len = [{self._snake_ini_len}]')
+        if self._is_customized_color is not True:
+            self._snake_color="#5FF26A"
+        if TEST_MODE:print(f'[INFO]update _snake_color = [{self._snake_color}]')
+        if self._is_random_mod:
+            main_rng = np.random.default_rng(sha256_decimal(rd.randint(0, 65535)))
         else:
-            main_rng = np.random.default_rng(self.random_seed.get())
+            self.main_rng = np.random.default_rng(sha256_decimal(self._random_seed))
         self.snake_rng = np.random.default_rng(sha256_decimal(main_rng.integers(low=0, high=65535)))
         self.apple_rng = np.random.default_rng(sha256_decimal(main_rng.integers(low=0, high=65535)))
+        if TEST_MODE:print(f'[INFO]create RNG of self.main_rng')
+        if TEST_MODE:print(f'[INFO]create RNG of self.snake_rng')
+        if TEST_MODE:print(f'[INFO]create RNG of self.apple_rng')
+        if TEST_MODE:print(f'[INFO]Update complex type of vars done')
         
 
     def activate_wasd(self):
@@ -501,36 +596,38 @@ class Gameconfig:
         self.bind_ids['<d>']     = root.bind('<d>',     lambda e: snake.set_direction_R(), add='+')
         if self._is_activated_bind is False:
             self._is_activated_bind = True
-            if TEST_MODE: print("WASD keys activated")
+            if TEST_MODE: print("[INFO]WASD keys activated")
 
     def deactivate_wasd(self):
         if self.bind_ids is None:
             for key, bind_id in self.bind_ids.items():
                 root.unbind(key, bind_id)
+                if TEST_MODE: print(f"key {key} unbind {bind_id}")
         if self._is_activated_bind is True:
             self._is_activated_bind = False
-            if TEST_MODE: print("WASD keys deactivated")
+            if TEST_MODE: print("[INFO]WASD keys deactivated")
         
 class Score_Record:
     def __init__(self):
         self._score = 0
         self._apple_count = 0
         self._max_len = gameconfig.snake_ini_len.get()
-        if TEST_MODE: print(f"Score_Record initialization done")
-    def add_score(self, score):
-        self._score += score
-        if TEST_MODE: print(f"Score added: {score}, Total score: {self._score}")
+        if TEST_MODE: print(f"[INFO]Score_Record initialization done")
+    def add_score(self, step):
+        self._score += step
+        pass
+        if TEST_MODE: print(f"[INFO]Score added: {step}, Total score: {self._score}")
     def add_apple(self):
         self._apple_count += 1
-        if TEST_MODE: print(f"Apple count increased: {self._apple_count}")
+        if TEST_MODE: print(f"[INFO]Apple count increased: {self._apple_count}")
     def add_len(self, len):
         self._max_len += len
-        if TEST_MODE: print(f"Snake length increased: {self._max_len}")
+        if TEST_MODE: print(f"[INFO]Snake length increased: {self._max_len}")
     def copy_score_record(myself, other):
         myself.add_apple(other._apple_count)
         myself.add_score(other._score) 
         myself.add_len(other._max_len)
-        if TEST_MODE: print(f"Score_Record copied from myself to other")
+        if TEST_MODE: print(f"[INFO]Score_Record copied from myself to other")
 
 
 class Size(Enum):
@@ -579,7 +676,7 @@ def start_game():
     pass
 
 def go_to_main_page():
-    canvam.main_page()  
+    pass
 
 def go_to_info_page():
     pass
@@ -592,7 +689,7 @@ if __name__ == "__main__":
     gamectl = GameCtl()
     menu_setting(root)
     canvam = CanvaManager(root)
-    go_to_main_page()
+    canvam.main_page()  
     root.mainloop()
 
 

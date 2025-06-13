@@ -1,46 +1,31 @@
 import tkinter as tk
 
-def hex_to_rgb(hex_color):
-    hex_color = hex_color.lstrip('#')
-    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+root = tk.Tk()
+root.title("Snake Head")
 
-def rgb_to_hex(rgb_color):
-    return '#{:02x}{:02x}{:02x}'.format(*rgb_color)
+canvas = tk.Canvas(root, width=30, height=30, bg='white')
+canvas.pack()
 
-def gradient_color(start_color, end_color, factor):
-    return tuple(int(s + (e - s) * factor) for s, e in zip(start_color, end_color))
 
-def draw_gradient_snake(canvas, snake_coords, snake_color, bg_color, unit_size=30):
-    canvas.delete("all")
+canvas.create_oval(5, 2, 25, 28, fill='#D2B48C', outline='')
 
-    snake_rgb = hex_to_rgb(snake_color)
-    bg_rgb = hex_to_rgb(bg_color)
+canvas.create_polygon(8, 20, 15, 29, 22, 20, fill='#A0522D', outline='')
 
-    total_segments = len(snake_coords)
 
-    for i in range(total_segments):
-        factor = i / (total_segments - 1)
-        segment_color = rgb_to_hex(gradient_color(snake_rgb, bg_rgb, factor))
+canvas.create_oval(9, 8, 12, 12, fill='black', outline='')
 
-        x, y = snake_coords[i]
-        x1, y1 = x * unit_size, y * unit_size
-        x2, y2 = x1 + unit_size, y1 + unit_size
 
-        canvas.create_rectangle(x1, y1, x2, y2, fill=segment_color, outline=segment_color)
+canvas.create_oval(18, 8, 21, 12, fill='black', outline='')
 
-# example test
-if __name__ == '__main__':
-    root = tk.Tk()
-    root.title("Gradient Snake")
 
-    canvas = tk.Canvas(root, width=400, height=400, bg='#000000')
-    canvas.pack()
+canvas.create_oval(13, 4, 14, 5, fill='#8B4513', outline='')
+canvas.create_oval(16, 4, 17, 5, fill='#8B4513', outline='')
 
-    snake_coords = [
-        [1, 1], [2, 2], [3, 3], [4, 4],
-        [5, 5], [6, 6], [7, 7]
-    ]
 
-    draw_gradient_snake(canvas, snake_coords, snake_color='#00FF00', bg_color='#000000', unit_size=30)
+canvas.create_oval(13, 14, 17, 17, fill='#C19A6B', outline='')
+canvas.create_oval(11, 16, 15, 19, fill='#C19A6B', outline='')
+canvas.create_oval(15, 16, 19, 19, fill='#C19A6B', outline='')
+canvas.create_oval(9, 18, 13, 21, fill='#C19A6B', outline='')
+canvas.create_oval(17, 18, 21, 21, fill='#C19A6B', outline='')
 
-    root.mainloop()
+root.mainloop()
