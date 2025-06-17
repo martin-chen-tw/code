@@ -626,7 +626,7 @@ class GameCtl:
                 self.last_record.add_len(1)
                 self.last_record.add_score(self.step, self.gameconfig.score_rng)
                 self.snake.bodies.insert(0, [new_x, new_y])
-                self.apple.change_position(self.snake, self.last_record._max_len)
+                self.apple.change_position(self.snake)
                 self.step = 0
                 test_print(INFO,'Eat apple!')
             elif (0 <= new_x < int(self.gameconfig._block_number[0])) is not True:
@@ -874,14 +874,14 @@ def menu_setting(root):
     menu = tk.Menu(root)
     def go_to_info_page():
         me='''
-    ç¬¬ï¿½??ï¿½?
-    112207408 ???æ¸¬ï¿½?? ??ï¿½ï¿½?????
-    113207410 ???æ¸¬ï¿½?? ï¿½???ï¿½ï¿½??
-    113207411 ???æ¸¬ï¿½?? ???ï¿½????
-    113207423 ???æ¸¬ï¿½?? å¼µé¨°???
-    113207424 ???æ¸¬ï¿½?? ??ï¿½ï¿½??ï¿½?
-    113207434 ???æ¸¬ï¿½?? ??????ï¿½? (ï¿½????)
-    113207435 ???æ¸¬ï¿½?? ???ï¿½?ï¿½?
+    ²Ä¤@²Õ
+    112207408 ¤g´ú¤@ ¦¶µú®¦
+    113207410 ¤g´ú¤@ ¦¿ªN¶§
+    113207411 ¤g´ú¤@ ³Å¤l®¦
+    113207423 ¤g´ú¤@ ±iÄË¤¸
+    113207424 ¤g´ú¤@ ³¯©ú¯E
+    113207434 ¤g´ú¤@ ªL«i¦w (²Õªø)
+    113207435 ¤g´ú¤@ ªL¤lµ¾
     '''
         mb.showinfo(title="Project Info",message=me,type=mb.OK)
 

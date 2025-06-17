@@ -233,14 +233,18 @@ class CanvaManager:
                 if TEST_MODE: print(f"[ERROR]Failed to clear canvas: {e}")
         
     def main_page(self):
+
         #--- Initialization
+
         if TEST_MODE: print(f"[INFO]Initializing main page...")
         global root, gameconfig, snake
         gameconfig.deactivate_wasd()
         root.geometry('800x600')
         self.clear_canvas_and_widget()
         if TEST_MODE: print(f"[INFO]Creating main page...")
+
         #--- Title and information
+
         self.canvas = tk.Canvas(self.root, width=800, height=600)
         self.canvas.create_text( 400, 32, text='Snake', anchor='center', fill=f'#{0x000000:06X}', font=('Times New Roman', 42, 'bold'))
         self.canvas.create_text( 400, 75, text='Created by MING-HAO CHIN 20250613', anchor='center', fill='black', font=('Times New Roman', 17))
@@ -271,6 +275,7 @@ class CanvaManager:
         self.large_size_button.place(x=600, y=235, anchor='center')
         self.medium_size_button.place(x=400, y=235, anchor='center')
         self.small_size_button.place(x=200, y=235, anchor='center')
+
         #--- Game Speed
 
         self.canvas.create_text( 400, 270, text='Game Speed', anchor='center', fill='#202020', font=('Times New Roman', 19, 'bold'))
@@ -336,6 +341,8 @@ class CanvaManager:
                                                              fg='#363636', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_body_len,value=True)
         self.customized_ini_body_len_entry = tk.Entry(self.root, width=3, font=('Times New Roman', 12, 'bold'), fg='#363636', 
                                                         bg='#f0f0f0', state='normal',validate='focusout', validatecommand=len_vcmd,invalidcommand=len_ivcmd)
+        self.color_preview = tk.Canvas(self.root, width=40, height=20, highlightthickness=1, highlightbackground="#888")
+        self.color_preview_rect = self.color_preview.create_rectangle(0, 0, 40, 20, fill="#5FF26A", outline="#5FF26A")
         self.customized_ini_body_len_entry.insert(0, '3')
         self.customized_ini_body_len_entry.config(state='disabled')
         self.default_ini_body_len_button.config(command=lambda: select_default_len())
@@ -359,6 +366,17 @@ class CanvaManager:
             self.customized_body_color_entry.config(state='normal')
             gameconfig.is_discoloration.set(False)
             self.discoloration_button.config(state='disabled')
+
+        def update_color_preview(event=None):
+            color = self.customized_body_color_entry.get()
+            # 自動補 #，並驗證格式
+            if not color.startswith("#"):
+                color = "#" + color
+            if re.fullmatch(r'^#([0-9A-Fa-f]{6})$', color):
+                self.canvas.itemconfig(self.color_preview_rect, fill=color)
+            else:
+                # 不合法時顯示預設色
+                self.canvas.itemconfig(self.color_preview_rect, fill="#5FF26A")
             
         # Regular expression for hex color code    
         col_pattern = r'^#(?:[0-9A-F]){6}$'  
@@ -384,14 +402,21 @@ class CanvaManager:
         self.default_body_color_button = tk.Radiobutton(self.root, text='default body color', anchor='center', fg='#363636', font=('Times New Roman', 15,'bold'),variable=gameconfig.is_customized_color,value=False,command=lambda: select_default_color())
         self.customized_body_color_button = tk.Radiobutton(self.root, text='customized body color', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold'),variable=gameconfig.is_customized_color, value=True, command=lambda: select_customized_color())
         self.customized_body_color_entry = tk.Entry(self.root, width=10, font=('Times New Roman', 12, 'bold'), fg='#363636', bg='#f0f0f0', validate='focusout',validatecommand=col_vcmd, invalidcommand=col_ivcmd)
+        self.discoloration_button = tk.Checkbutton(self.root, text='discoloration', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold') ,variable=gameconfig.is_discoloration, state='normal', onvalue=True, offvalue=False)
+        self.color_preview_rect = self.canvas.create_rectangle(590, 410, 630, 430, fill="#5FF26A", outline="#888888")
+
+        self.customized_body_color_entry.bind("<KeyRelease>", update_color_preview)
+        self.customized_body_color_entry.bind("<FocusOut>", update_color_preview)
         self.customized_body_color_entry.insert(0, '#5FF26A')
         self.customized_body_color_entry.config(state='disabled')
-        self.discoloration_button = tk.Checkbutton(self.root, text='discoloration', anchor='center', fg='#363636', font=('Times New Roman', 15, 'bold') ,variable=gameconfig.is_discoloration, state='normal', onvalue=True, offvalue=False)
+        update_color_preview()
+        
         
         self.default_body_color_button.place(x=170, y=420, anchor='center')
         self.customized_body_color_button.place(x=500, y=420, anchor='center')
         self.customized_body_color_entry.place(x=670, y=420, anchor='center')
         self.discoloration_button.place(x=280, y=420, anchor='center')
+        self.color_preview.place(x=610, y=420, anchor='center')
 
         #---
 
