@@ -626,7 +626,7 @@ class GameCtl:
                 self.last_record.add_len(1)
                 self.last_record.add_score(self.step, self.gameconfig.score_rng)
                 self.snake.bodies.insert(0, [new_x, new_y])
-                self.apple.change_position(self.snake, self.last_record._max_len)
+                self.apple.change_position(self.snake)
                 self.step = 0
                 test_print(INFO,'Eat apple!')
             elif (0 <= new_x < int(self.gameconfig._block_number[0])) is not True:
